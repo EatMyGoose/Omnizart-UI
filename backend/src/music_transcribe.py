@@ -8,7 +8,7 @@ from typing import Optional, get_args
 
 from .sound_util import SoundUtil
 from .util import CreateLogger, ChangeExtension, GetFilenameWithExtension
-from .transcriber import Transcriber, TOmnizartMode
+from .transcriber import Transcriber, TOmnizartMode, TTranscriptionResult
 
 transcribeBP = Blueprint("transcribe-music",  url_prefix="/music");
 
@@ -37,24 +37,33 @@ async def transcribeMusic(request: Request):
     requestedMode: TOmnizartMode = GetTranscriptionMode(mode, "music");
     logger.info(f"Mode: query param <{mode}>, parsed <{requestedMode}>")
 
+    if not Transcriber.IsSupportedMode(requestedMode):
+        logger.warn(f"Warning, mode<{mode}> is not supported");
+
     logger.info("upload complete");
-    with tempfile.TemporaryDirectory() as tmp:
-        srcFilePath: str = os.path.join(tmp, musicFile.name)
+    transcriptionResult: Optional[TTranscriptionResult] = None;
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            srcFilePath: str = os.path.join(tmp, musicFile.name)
 
-        with open(srcFilePath, 'wb') as hFile:
-            hFile.write(musicFile.body)
-        logger.info("disk write complete");
+            with open(srcFilePath, 'wb') as hFile:
+                hFile.write(musicFile.body)
+            logger.info("disk write complete");
 
-        outputFilePath: str = Transcriber.Transcribe(
-            tmp,
-            musicFile.name,
-            ChangeExtension(musicFile.name, ".mid"),
-            requestedMode,
-            logger
-        );
-
-        return await file(
-            outputFilePath, 
-            filename=GetFilenameWithExtension(outputFilePath), 
-            mime_type="audio/midi"
-        );
+            transcriptionResult = Transcriber.Transcribe(
+                tmp,
+                musicFile.name,
+                requestedMode,
+                logger
+            );
+            
+            return await file(
+                transcriptionResult.filePath, 
+                filename=GetFilenameWithExtension(transcriptionResult.filePath), 
+                mime_type="audio/midi"
+            );
+    finally:
+        if transcriptionResult.cleanupRequired:
+            logger.info(f"Deleting temp file: {transcriptionResult.filePath}")
+            assert(os.path.isfile(transcriptionResult.filePath))
+            os.remove(transcriptionResult.filePath)

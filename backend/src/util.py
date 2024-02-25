@@ -27,5 +27,8 @@ def ChangeExtension(
     filenameWithoutExtension: str = Path(filename).stem;
     return filenameWithoutExtension + newExtension;
 
+def GetFilenameWithoutExtension(path: str) -> str:
+    return Path(path).stem;
+
 def GetFilenameWithExtension(path: str) -> str:
     return os.path.basename(path);
