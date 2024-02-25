@@ -1,0 +1,28 @@
+# dependency llvmlite doesn't support any newer version
+FROM python:3.8 
+
+#omnizart installation
+RUN apt-get update && apt-get -y upgrade
+
+RUN apt-get install libsndfile-dev fluidsynth ffmpeg -y
+
+RUN pip install numpy Cython
+
+RUN pip install omnizart
+
+RUN omnizart download-checkpoints
+
+#dev layer
+WORKDIR /src
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY src/ .
+
+EXPOSE 8000
+
+WORKDIR /
+
+CMD ["python", "-m", "sanic", "src.main:app", "--host=0.0.0.0", "--debug", "--reload"]
