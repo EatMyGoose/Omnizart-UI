@@ -5,11 +5,12 @@ import { useObjectURL } from './useObjectURL';
 import { MidiPlayer } from './MidiPlayer';
 import { MidiVisualizer } from './MidiVisualizer';
 import { PlayerElement, VisualizerElement } from 'html-midi-player';
+import { TranscriptionControls } from './TranscriptionControls/TranscriptionControls';
 
 export const TTranscriptionModeValues = ["music", "drum", "chord", "vocal", "vocal-contour"] as const;
 export type TTranscriptionMode = typeof TTranscriptionModeValues[number];
 
-const modeNameMap = new Map<TTranscriptionMode, string>([
+export const modeNameMap = new Map<TTranscriptionMode, string>([
   ["music", "Music"],
   ["drum", "Drum"],
   ["chord", "Chords"],
@@ -27,7 +28,6 @@ function GetRequestURL(mode: TTranscriptionMode): string
 function App() {
   const [transcriptionMode, setTranscriptionMode] = React.useState<TTranscriptionMode>("music");
   const [file, setFile] = React.useState<File | null>(null);
-  const canSend: boolean = file !== null;
 
   const transcriptionResult = useQuery({
     queryKey: ["transcription"],
@@ -51,15 +51,6 @@ function App() {
   })
 
   const midiFileURL = useObjectURL(transcriptionResult.data, transcriptionResult.isSuccess);
-  const originalFileURL = useObjectURL(file || undefined, file !== null);
-
-  function onFileSelected(e: ChangeEvent<HTMLInputElement>)
-  {
-    if(e.target.files && e.target.files.length >= 1)
-    {
-      setFile(e.target.files[0]);
-    }
-  }
 
   const playerRef = React.useRef<PlayerElement>(null);
   const visualizerRef = React.useRef<VisualizerElement>(null);
@@ -95,45 +86,14 @@ function App() {
           <div className="card-content">
             <span className="card-title"><h5>Transcription Controls</h5></span>
               <div className="section">
-                <h6>Select Input File</h6>
-                <label>Upload .wav file</label>
-                <br/>
-                <input type="file" accept="audio/*" onChange={onFileSelected}></input>  
-                
-                <br/>
-                <button   
-                  disabled={!canSend}
-                  onClick={() =>{ transcriptionResult.refetch()}}
-                >
-                  Transcribe
-                </button>
-                <br/>
-                <label>Original File:</label>
-                <br/>
-                <audio controls src={originalFileURL}/>
-                <br/>
-                <div>                  
-                  <label>Transcription Mode</label>
-                  <select 
-                    value={transcriptionMode}
-                    onChange={(e) => {setTranscriptionMode(e.target.value as TTranscriptionMode)}}
-                    className="browser-default"
-                  >
-                    {
-                      TTranscriptionModeValues.map(mode => {
-                        return (
-                          <option
-                            key={mode}
-                            value={mode}
-                          >
-                            {modeNameMap.get(mode)}
-                          </option>
-                        )
-                      })
-                    }
-                  </select> 
-                  
-                </div>
+                <TranscriptionControls
+                  currentFile={file}
+                  onFileChanged={setFile}
+                  transcriptionMode={transcriptionMode}
+                  setTranscriptionMode={setTranscriptionMode}
+                  disabled={transcriptionResult.isFetching}
+                  sendTranscriptionRequest={() => transcriptionResult.refetch()}
+                />
                 </div>
                 {
                   (
@@ -143,7 +103,7 @@ function App() {
                       </div>):
                       undefined
                   )
-                  }
+                }
               <div className="divider"/>
               <div className='section'>
                 <h6>Transcription Result</h6>
