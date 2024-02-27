@@ -1,4 +1,5 @@
 import React from "react"
+import { cx } from "../util"
 
 export interface IFileInput
 {
@@ -6,6 +7,7 @@ export interface IFileInput
     accept?: string
     disabled?: boolean
     id?: string
+    className?: string
 }
 
 export function FileInput(props: IFileInput)
@@ -27,24 +29,27 @@ export function FileInput(props: IFileInput)
     }
 
     return (
-        <>
-            <form action="#">
-                <div className="file-field input-field">
-                <div className="btn">
-                    <span>File</span>
-                    <input 
-                        type="file"
-                        accept={props.accept}
-                        disabled={props.disabled}
-                        onChange={onFileChanged}
-                        id={props.id}
-                    />
-                </div>
-                <div className="file-path-wrapper">
-                    <input className="file-path validate" type="text" value={filename}/>
-                </div>
-                </div>
-            </form>
-        </>
+        <div 
+            className={cx(props.className || "", "file-field input-field")}
+        >
+            <div className="btn">
+                <span>File</span>
+                <input 
+                    type="file"
+                    accept={props.accept}
+                    disabled={props.disabled}
+                    onChange={onFileChanged}
+                    id={props.id}
+                />
+            </div>
+            <div className="file-path-wrapper">
+                <input 
+                    className="file-path validate" 
+                    type="text" 
+                    value={filename}
+                    readOnly
+                />
+            </div>
+        </div>     
     )
 }

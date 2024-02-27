@@ -1,0 +1,23 @@
+
+.full_width {
+    width: 100%;
+}
+
+.my_1{
+    margin-top: 0.5rem !important; 
+    margin-bottom: 0.5rem !important;
+}
+
+.mx_1{
+    margin-left: 0.5rem !important;
+    margin-right: 0.5rem !important;
+}
+
+.m_1{
+    margin: 0.5rem 0.5rem !important;
+}
+
+.my_0{
+    margin-top: 0rem !important; 
+    margin-bottom: 0rem !important;
+}
