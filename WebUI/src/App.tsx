@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react'
+import React from 'react'
 import './App.css'
 import {useQuery } from '@tanstack/react-query';
 import { useObjectURL } from './useObjectURL';
@@ -6,6 +6,7 @@ import { MidiPlayer } from './MidiPlayer';
 import { MidiVisualizer } from './MidiVisualizer';
 import { PlayerElement, VisualizerElement } from 'html-midi-player';
 import { TranscriptionControls } from './TranscriptionControls/TranscriptionControls';
+import { ProgressInfo } from './ProgressInfo/ProgressInfo';
 
 export const TTranscriptionModeValues = ["music", "drum", "chord", "vocal", "vocal-contour"] as const;
 export type TTranscriptionMode = typeof TTranscriptionModeValues[number];
@@ -28,11 +29,14 @@ function GetRequestURL(mode: TTranscriptionMode): string
 function App() {
   const [transcriptionMode, setTranscriptionMode] = React.useState<TTranscriptionMode>("music");
   const [file, setFile] = React.useState<File | null>(null);
+  const [uploadedFilename, setUploadedFilename] = React.useState<string|undefined>(undefined);
 
   const transcriptionResult = useQuery({
     queryKey: ["transcription"],
     queryFn: async (_) => {
       if(file === null) throw new Error("No file selected");
+
+      setUploadedFilename(file.name);
 
       const payload = new FormData();
       payload.append("music-file", file);
@@ -95,15 +99,10 @@ function App() {
                   sendTranscriptionRequest={() => transcriptionResult.refetch()}
                 />
                 </div>
-                {
-                  (
-                    (transcriptionResult.isFetching)?  
-                      (<div className="progress">
-                        <div className="indeterminate"></div>
-                      </div>):
-                      undefined
-                  )
-                }
+                <ProgressInfo
+                  isLoading={transcriptionResult.isFetching}
+                  filename={uploadedFilename}
+                />
               <div className="divider"/>
               <div className='section'>
                 <h6>Transcription Result</h6>
