@@ -21,3 +21,7 @@
     margin-top: 0rem !important; 
     margin-bottom: 0rem !important;
 }
+
+.hidden{
+    display: none;
+}

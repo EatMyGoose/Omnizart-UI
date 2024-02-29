@@ -7,6 +7,7 @@ import { MidiVisualizer } from './MidiVisualizer';
 import { PlayerElement, VisualizerElement } from 'html-midi-player';
 import { TranscriptionControls } from './TranscriptionControls/TranscriptionControls';
 import { ProgressInfo } from './ProgressInfo/ProgressInfo';
+import { TranscriptionResult } from './TranscriptionResult/TranscriptResult';
 
 export const TTranscriptionModeValues = ["music", "drum", "chord", "vocal", "vocal-contour"] as const;
 export type TTranscriptionMode = typeof TTranscriptionModeValues[number];
@@ -26,14 +27,20 @@ function GetRequestURL(mode: TTranscriptionMode): string
   return baseURL.toString();
 }
 
+function GetFilenameWithouExtension(filename:string)
+{
+  return filename.split(".")[0];
+}
+
 function App() {
   const [transcriptionMode, setTranscriptionMode] = React.useState<TTranscriptionMode>("music");
   const [file, setFile] = React.useState<File | null>(null);
   const [uploadedFilename, setUploadedFilename] = React.useState<string|undefined>(undefined);
+  const [midiFilename, setMidiFilename] = React.useState<string|undefined>(undefined);
 
   const transcriptionResult = useQuery({
     queryKey: ["transcription"],
-    queryFn: async (_) => {
+    queryFn: async () => {
       if(file === null) throw new Error("No file selected");
 
       setUploadedFilename(file.name);
@@ -48,6 +55,7 @@ function App() {
         }
       );
 
+      setMidiFilename(GetFilenameWithouExtension(file.name));
       return await response.blob();
     },
     enabled: false,
@@ -55,21 +63,6 @@ function App() {
   })
 
   const midiFileURL = useObjectURL(transcriptionResult.data, transcriptionResult.isSuccess);
-
-  const playerRef = React.useRef<PlayerElement>(null);
-  const visualizerRef = React.useRef<VisualizerElement>(null);
-
-  React.useEffect(() => {
-    if(playerRef.current && visualizerRef.current)
-    {
-      console.log("attaching");
-      playerRef.current.addVisualizer(visualizerRef.current);
-      return () => playerRef.current!.removeVisualizer(visualizerRef.current!);
-    }
-
-    return () => {};
-  }, [playerRef.current, visualizerRef.current])
-  
 
   return (
     <>
@@ -88,8 +81,12 @@ function App() {
       <div className='container'>
         <div className="card">
           <div className="card-content">
-            <span className="card-title"><h5>Transcription Controls</h5></span>
-              <div className="section">
+            <span className="card-title">
+              <h5>Transcription Controls</h5>
+            </span>
+
+            <div className="section">
+              <div>
                 <TranscriptionControls
                   currentFile={file}
                   onFileChanged={setFile}
@@ -98,38 +95,20 @@ function App() {
                   disabled={transcriptionResult.isFetching}
                   sendTranscriptionRequest={() => transcriptionResult.refetch()}
                 />
-                </div>
+              </div>
+              <div>
                 <ProgressInfo
                   isLoading={transcriptionResult.isFetching}
                   filename={uploadedFilename}
                 />
-              <div className="divider"/>
-              <div className='section'>
-                <h6>Transcription Result</h6>
-                {
-                  (!transcriptionResult.isFetching && midiFileURL !== undefined)?
-                      (
-                        <div>
-                          <a href={midiFileURL} download="transcribed">Download file</a>
-                        </div>
-                      )
-                      : undefined
-                }
               </div>
-              <MidiPlayer 
-                src={midiFileURL || ""} 
-                soundFont=""
-                visualizer="#visualizer"
-                ref={playerRef}
-              />
+            </div>
+            <div className="divider"/>
 
-              <MidiVisualizer 
-                src={midiFileURL || ""} 
-                id="visualizer" 
-                type="piano-roll"  
-                style={{height:"30vh"}}
-                ref={visualizerRef}
-              />
+            <TranscriptionResult
+              midiFileURL={midiFileURL}
+              midiFilename={midiFilename}
+            />
           </div>
         </div>
       </div>

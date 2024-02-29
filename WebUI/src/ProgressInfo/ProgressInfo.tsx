@@ -71,8 +71,6 @@ export function ProgressInfo(props: IProgressInfo)
 
     return (
         <div className={props.className}>
-            {loader}
-            
             <div>
                 <div className="input-field">
                     <input 
@@ -87,6 +85,7 @@ export function ProgressInfo(props: IProgressInfo)
                 </div>
             </div>
             {elapsedTime}
+            {loader}
         </div>
     )
 }

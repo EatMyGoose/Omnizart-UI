@@ -7,6 +7,7 @@ export interface IMidiPlayer
     src: string,
     soundFont: string
     visualizer?: string
+    className?: string
 }
 
 export const MidiPlayer = React.forwardRef(
@@ -18,7 +19,8 @@ export const MidiPlayer = React.forwardRef(
                 src: props.src,
                 "sound-font": props.soundFont,
                 visualizer: props.visualizer,
-                ref: ref
+                ref: ref,
+                class: props.className || "",
             }
         );
     }
