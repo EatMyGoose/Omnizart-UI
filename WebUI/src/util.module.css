@@ -13,6 +13,16 @@
     margin-right: 0.5rem !important;
 }
 
+.mx_0{
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.px_0{
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
 .m_1{
     margin: 0.5rem 0.5rem !important;
 }
@@ -24,4 +34,8 @@
 
 .hidden{
     display: none;
+}
+
+.float_right{
+    float:right;
 }

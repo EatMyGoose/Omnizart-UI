@@ -70,7 +70,7 @@ export function ProgressInfo(props: IProgressInfo)
     )
 
     return (
-        <div className={props.className}>
+        <div className={props.className || ""}>
             <div>
                 <div className="input-field">
                     <input 

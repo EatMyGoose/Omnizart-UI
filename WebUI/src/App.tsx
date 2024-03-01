@@ -2,12 +2,10 @@ import React from 'react'
 import './App.css'
 import {useQuery } from '@tanstack/react-query';
 import { useObjectURL } from './useObjectURL';
-import { MidiPlayer } from './MidiPlayer';
-import { MidiVisualizer } from './MidiVisualizer';
-import { PlayerElement, VisualizerElement } from 'html-midi-player';
 import { TranscriptionControls } from './TranscriptionControls/TranscriptionControls';
 import { ProgressInfo } from './ProgressInfo/ProgressInfo';
 import { TranscriptionResult } from './TranscriptionResult/TranscriptResult';
+import util from "./util.module.css"
 
 export const TTranscriptionModeValues = ["music", "drum", "chord", "vocal", "vocal-contour"] as const;
 export type TTranscriptionMode = typeof TTranscriptionModeValues[number];
@@ -37,11 +35,14 @@ function App() {
   const [file, setFile] = React.useState<File | null>(null);
   const [uploadedFilename, setUploadedFilename] = React.useState<string|undefined>(undefined);
   const [midiFilename, setMidiFilename] = React.useState<string|undefined>(undefined);
+  const [autoTranscribe, setAutoTranscribe] = React.useState<boolean>(false);
 
+  const [fileToSend, setFileToSend] = React.useState<File | null>(null);
   const transcriptionResult = useQuery({
-    queryKey: ["transcription"],
-    queryFn: async () => {
-      if(file === null) throw new Error("No file selected");
+    queryKey: ["transcription", fileToSend],
+    queryFn: async ( {queryKey} ) => {
+      const [_, file] = queryKey as [string, File | null];
+      if(file === null) return;
 
       setUploadedFilename(file.name);
 
@@ -55,12 +56,19 @@ function App() {
         }
       );
 
-      setMidiFilename(GetFilenameWithouExtension(file.name));
+      setMidiFilename(  GetFilenameWithouExtension(file.name));
       return await response.blob();
     },
-    enabled: false,
+    enabled: fileToSend !== null,
     retry: false,
   })
+
+  function sendQuery(nextFile: File)
+  {
+    setFile(nextFile); 
+    setFileToSend(nextFile);
+    if(nextFile == file) transcriptionResult.refetch();
+  }
 
   const midiFileURL = useObjectURL(transcriptionResult.data, transcriptionResult.isSuccess);
 
@@ -88,27 +96,30 @@ function App() {
             <div className="section">
               <div>
                 <TranscriptionControls
+                  autoTranscribe={autoTranscribe}
+                  setAutoTranscribe={setAutoTranscribe}
                   currentFile={file}
                   onFileChanged={setFile}
                   transcriptionMode={transcriptionMode}
                   setTranscriptionMode={setTranscriptionMode}
                   disabled={transcriptionResult.isFetching}
-                  sendTranscriptionRequest={() => transcriptionResult.refetch()}
-                />
-              </div>
-              <div>
-                <ProgressInfo
-                  isLoading={transcriptionResult.isFetching}
-                  filename={uploadedFilename}
+                  sendTranscriptionRequest={(file) => sendQuery(file)}
                 />
               </div>
             </div>
             <div className="divider"/>
-
-            <TranscriptionResult
-              midiFileURL={midiFileURL}
-              midiFilename={midiFilename}
-            />
+            <form>
+              <h6 className={util.my_1}>Transcription Result</h6>
+              <ProgressInfo
+                className={util.my_1}
+                isLoading={transcriptionResult.isFetching}
+                filename={uploadedFilename}
+              />
+              <TranscriptionResult
+                midiFileURL={midiFileURL}
+                midiFilename={midiFilename}
+              />
+            </form>
           </div>
         </div>
       </div>

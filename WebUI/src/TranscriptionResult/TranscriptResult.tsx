@@ -46,7 +46,6 @@ export function TranscriptionResult(props: ITranscriptionResult)
                 href={props.midiFileURL}
                 ref={midiDownloadRef}
             />
-            <h6>Transcription Result</h6>
             {downloadLink}
 
             <MidiPlayer 
