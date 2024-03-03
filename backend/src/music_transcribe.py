@@ -1,7 +1,7 @@
 import tempfile
 import os
 import subprocess
-from sanic import Request, Blueprint, file
+from sanic import Request, Blueprint, file, json
 from sanic.exceptions import SanicException
 from sanic_ext import openapi
 from typing import Optional, get_args
@@ -9,6 +9,10 @@ from typing import Optional, get_args
 from .sound_util import SoundUtil
 from .util import CreateLogger, ChangeExtension, GetFilenameWithExtension
 from .transcriber import Transcriber, TOmnizartMode, TTranscriptionResult
+
+from .schemas import TranscriptionJob, ResponseJobStatus, IsJobDone
+
+from dataclasses import asdict
 
 transcribeBP = Blueprint("transcribe-music",  url_prefix="/music");
 
@@ -22,6 +26,19 @@ def GetTranscriptionMode(mode: Optional[str], defaultMode: TOmnizartMode) -> TOm
     else:
         return mode;
 
+@transcribeBP.get("/status/<job_id:int>")
+@openapi.description("Gets the current status of a job")
+async def getStatus(request: Request, job_id: int):
+    print("ab")
+    job = await TranscriptionJob.select().where(TranscriptionJob.id == job_id).first()
+    if job is None:
+        raise SanicException(f"job_id <{job_id}> not found", 404);
+    else:
+        jobStatus = ResponseJobStatus(
+            job["status"],
+            done = IsJobDone(job["status"])
+        )
+        return json(asdict(jobStatus))
 
 #TODO -> Omnizart can't seem to transcribe short files
 @transcribeBP.post("/transcribe")

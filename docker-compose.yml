@@ -11,6 +11,7 @@ services:
       - SANIC_RESPONSE_TIMEOUT=900
       - SANIC_REQUEST_MAX_SIZE=200000000
       - PYTHONUNBUFFERED=1
+      - PICCOLO_CONF=src.piccolo_conf
   frontend:
     build: WebUI
     ports:
