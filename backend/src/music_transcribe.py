@@ -1,16 +1,16 @@
 import tempfile
 import os
-import subprocess
-from sanic import Request, Blueprint, file, json
+from sanic import Request, Blueprint, file, raw, json
 from sanic.exceptions import SanicException
 from sanic_ext import openapi
 from typing import Optional, get_args
+import asyncio
 
-from .sound_util import SoundUtil
-from .util import CreateLogger, ChangeExtension, GetFilenameWithExtension
+from .util import CreateLogger, GetFilenameWithExtension
 from .transcriber import Transcriber, TOmnizartMode, TTranscriptionResult
 
-from .schemas import TranscriptionJob, ResponseJobStatus, IsJobDone
+from .schemas import TranscriptionJob, ResponseJobStatus, IsJobDone, ResponseScheduledJob, TOmnizartMode
+from .JobController import JobController
 
 from dataclasses import asdict
 
@@ -29,7 +29,6 @@ def GetTranscriptionMode(mode: Optional[str], defaultMode: TOmnizartMode) -> TOm
 @transcribeBP.get("/status/<job_id:int>")
 @openapi.description("Gets the current status of a job")
 async def getStatus(request: Request, job_id: int):
-    print("ab")
     job = await TranscriptionJob.select().where(TranscriptionJob.id == job_id).first()
     if job is None:
         raise SanicException(f"job_id <{job_id}> not found", 404);
@@ -39,12 +38,57 @@ async def getStatus(request: Request, job_id: int):
             done = IsJobDone(job["status"])
         )
         return json(asdict(jobStatus))
+    
+@transcribeBP.get("/download-result/<job_id:int>")
+@openapi.description("Download the midi file generated from transcription")
+async def getTranscriptionResult(_: Request, job_id: int):
+    completedJob = await JobController.GetCompletedJobAsync(job_id);
+    if completedJob is None:
+        raise SanicException(f"no completed job for job_id <{job_id}>", 404);
+    else:
+        (blob, filename) = completedJob
+        return raw(
+            blob,
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+            content_type="audio/midi"
+        );
+
+@transcribeBP.post("/post-transcription-job")
+@openapi.description("transcribes a .wav file into a midi file")
+async def postTranscriptionJob(request: Request): 
+    musicFile = request.files.get("music-file");
+
+    if musicFile is None:
+        logger.info("no file uploaded")
+        raise SanicException("no file uploaded", 400);
+
+    mode = request.args.get("mode")
+    requestedMode: TOmnizartMode = GetTranscriptionMode(mode, "music");
+    logger.info(f"Mode: query param <{mode}>, parsed <{requestedMode}>")
+
+    jobId: int = await JobController.InitJob(mode, musicFile.name);
+
+    eventLoop = asyncio.get_running_loop()
+
+    #Fire off job in another thread
+    eventLoop.run_in_executor(
+        None,
+        Transcriber.TranscribeFile,
+        jobId, 
+        logger, 
+        musicFile, 
+        mode
+    );
+
+    postedJob = ResponseScheduledJob(jobId);
+    #return job id
+    return json(asdict(postedJob))
 
 #TODO -> Omnizart can't seem to transcribe short files
 @transcribeBP.post("/transcribe")
 @openapi.description("transcribes a .wav file into a midi file")
 async def transcribeMusic(request: Request):
-    musicFile  = request.files.get("music-file");
+    musicFile = request.files.get("music-file");
 
     if musicFile is None:
         logger.info("no file uploaded")
@@ -80,7 +124,7 @@ async def transcribeMusic(request: Request):
                 mime_type="audio/midi"
             );
     finally:
-        if transcriptionResult.cleanupRequired:
+        if transcriptionResult and transcriptionResult.cleanupRequired:
             logger.info(f"Deleting temp file: {transcriptionResult.filePath}")
             assert(os.path.isfile(transcriptionResult.filePath))
             os.remove(transcriptionResult.filePath)

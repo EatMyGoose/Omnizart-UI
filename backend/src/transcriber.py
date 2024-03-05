@@ -1,13 +1,15 @@
 import os
 import subprocess
 from logging import Logger
-from typing import Literal, Set
+from typing import Literal, Set, Optional
 from dataclasses import dataclass
+import tempfile
 
 from .sound_util import SoundUtil
 from .util import GetFilenameWithoutExtension
+from .JobController import JobController
+from .schemas import JobStatus, TOmnizartMode
 
-TOmnizartMode = Literal["music", "drum", "chord", "vocal", "vocal-contour"]
 
 supportedModes: Set[TOmnizartMode] = set([
     "music",
@@ -19,7 +21,6 @@ supportedModes: Set[TOmnizartMode] = set([
 class TTranscriptionResult:
     filePath: str
     cleanupRequired: bool
-
 
 #TODO -> "chord" mode has some numpy version conflict
 class Transcriber:
@@ -77,3 +78,48 @@ class Transcriber:
             outputPath,
             fileDeletionRequired
         );
+
+    @staticmethod
+    def TranscribeFile(
+        jobId: int,
+        logger: Logger,
+        musicFile, #Todo: find type annotation
+        transcriptionMode: TOmnizartMode) -> None:
+
+        JobController.UpdateStatus(jobId, JobStatus.RUNNING);
+
+        transcriptionResult: Optional[TTranscriptionResult] = None;
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                srcFilePath: str = os.path.join(tmp, musicFile.name)
+
+                with open(srcFilePath, 'wb') as hFile:
+                    hFile.write(musicFile.body)
+
+                logger.info("disk write complete");
+
+                transcriptionResult = Transcriber.Transcribe(
+                    tmp,
+                    musicFile.name,
+                    transcriptionMode,
+                    logger
+                );
+                
+                with open(transcriptionResult.filePath, "rb") as hFile:
+                    transcribedFile: bytes = hFile.read();
+                    JobController.CreateCompletedJob(
+                        jobId, 
+                        transcriptionResult.filePath,
+                        transcribedFile
+                    );        
+                        
+                JobController.UpdateStatus(jobId, JobStatus.DONE);
+        except:
+            JobController.UpdateStatus(jobId, JobStatus.ERROR);
+        finally:
+            if transcriptionResult.cleanupRequired:
+                logger.info(f"Deleting temp file: {transcriptionResult.filePath}")
+                assert(os.path.isfile(transcriptionResult.filePath))
+                os.remove(transcriptionResult.filePath)
+
+

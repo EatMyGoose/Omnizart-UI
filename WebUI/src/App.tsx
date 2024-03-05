@@ -61,6 +61,7 @@ function App() {
     },
     enabled: fileToSend !== null,
     retry: false,
+    refetchOnWindowFocus: false,
   })
 
   function sendQuery(nextFile: File)

@@ -2,6 +2,9 @@ from piccolo.table import Table
 import piccolo.columns 
 from enum import auto, Enum
 from dataclasses import dataclass
+from typing import Literal
+
+TOmnizartMode = Literal["music", "drum", "chord", "vocal", "vocal-contour"]
 
 ##DB schemas
 class JobStatus(Enum):
@@ -16,7 +19,6 @@ class JobStatus(Enum):
 
 def IsJobDone(status: str) -> bool:
     return status in [JobStatus.DONE, JobStatus.TERMINATED, JobStatus.ERROR]
-
 
 class CompletedJob(Table):
     filename = piccolo.columns.Text()
@@ -39,6 +41,10 @@ class TranscriptionJob(Table):
 def CreateAllTables() -> None:
     CompletedJob.create_table(if_not_exists=True).run_sync();
     TranscriptionJob.create_table(if_not_exists=True).run_sync();
+
+@dataclass 
+class ResponseScheduledJob:
+    id: int
 
 ##Response bodies
 @dataclass
