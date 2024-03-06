@@ -1,6 +1,6 @@
 from typing import Tuple, Optional
 from datetime import datetime
-from .schemas import JobStatus, TranscriptionJob, CompletedJob, TOmnizartMode
+from .schemas import JobStatus, TranscriptionJob, CompletedJob, TOmnizartMode, StatusName
 
 class JobController:
     #returns the id of the newly created job
@@ -11,18 +11,18 @@ class JobController:
         time: datetime = datetime.now()
         ) -> int:
 
-        newJob = await TranscriptionJob.insert(
+        newJob = (await TranscriptionJob.insert(
             TranscriptionJob(
                 filename=srcFilename,
                 mode=transcriptionMode,
                 start_time=time,
                 end_time=None,
                 request_terminate=False,
-                status=JobStatus.NONE,
+                status=StatusName(JobStatus.NONE),
                 msg="",
                 completed_job=None
             )
-        );
+        ))[0];
 
         return newJob["id"];
 
@@ -33,7 +33,7 @@ class JobController:
         time: datetime = datetime.now()) -> None:
 
         TranscriptionJob.update({
-            TranscriptionJob.status: newStatus.value,
+            TranscriptionJob.status: StatusName(newStatus),
             TranscriptionJob.end_time: time
         }).where(
             TranscriptionJob.id == id
@@ -50,10 +50,13 @@ class JobController:
                 filename=filename,
                 blob=transcribedFileContents
             )
-        ).run_sync();
+        ).run_sync()[0];
+        
+        assert(not completedJob is None);
+        assert(isinstance(completedJob["id"], int));
 
         TranscriptionJob.update({
-            TranscriptionJob.completed_job: completedJob.id
+            TranscriptionJob.completed_job: completedJob["id"]
         }).where(
             TranscriptionJob.id == parentJobId
         ).run_sync();
@@ -62,12 +65,15 @@ class JobController:
     async def GetCompletedJobAsync(jobId: int) -> Optional[Tuple[bytes, str]]:
         completedJob = (
             await TranscriptionJob
-                .select(TranscriptionJob.completed_job)
+                .select(TranscriptionJob.completed_job.filename, TranscriptionJob.completed_job.blob)
                 .where(TranscriptionJob.id == jobId)
                 .first()
         );
 
         if completedJob is None:
             return None;    
+    
+        print("[][]returning");
+        print(completedJob)
 
-        return (completedJob["blob"], completedJob["filename"]);
+        return (completedJob["completed_job.blob"], completedJob["completed_job.filename"]);

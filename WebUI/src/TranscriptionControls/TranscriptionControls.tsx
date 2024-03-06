@@ -1,11 +1,11 @@
 import React from "react"
 import { useObjectURL } from "../useObjectURL";
-import { TTranscriptionMode, TTranscriptionModeValues, modeNameMap } from "../App";
 import { FileInput } from "../Components/FileInput";
 import { Button } from "../Components/Button";
 import util from "../util.module.css"
 import { cx } from "../util";
 import { ToggleButton } from "../Components/ToggleButton";
+import { TTranscriptionMode, TTranscriptionModeValues, modeNameMap } from "../types";
 
 interface ITranscriptionControls
 {

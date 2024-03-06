@@ -114,7 +114,8 @@ class Transcriber:
                     );        
                         
                 JobController.UpdateStatus(jobId, JobStatus.DONE);
-        except:
+        except Exception as e:
+            logger.error(e);
             JobController.UpdateStatus(jobId, JobStatus.ERROR);
         finally:
             if transcriptionResult.cleanupRequired:

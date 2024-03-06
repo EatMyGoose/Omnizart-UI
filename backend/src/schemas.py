@@ -17,8 +17,15 @@ class JobStatus(Enum):
 
     ERROR = auto()
 
+def StatusName(status: JobStatus) -> str:
+    return status.name;
+
 def IsJobDone(status: str) -> bool:
-    return status in [JobStatus.DONE, JobStatus.TERMINATED, JobStatus.ERROR]
+    return status in [
+        StatusName(JobStatus.DONE), 
+        StatusName(JobStatus.TERMINATED), 
+        StatusName(JobStatus.ERROR)
+    ]
 
 class CompletedJob(Table):
     filename = piccolo.columns.Text()
