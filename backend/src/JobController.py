@@ -1,4 +1,4 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict, Any, List
 from datetime import datetime
 from .schemas import JobStatus, TranscriptionJob, CompletedJob, TOmnizartMode, StatusName
 
@@ -25,6 +25,32 @@ class JobController:
         ))[0];
 
         return newJob["id"];
+
+    @staticmethod
+    def ShouldTerminateJob(jobId: int) -> bool:
+        job: Optional[Dict[str, Any]] = (
+            TranscriptionJob
+                .select()
+                .where(TranscriptionJob.id == jobId)
+                .first()
+                .run_sync()
+        );
+        shouldTerminate = job["request_terminate"];
+        assert(isinstance(shouldTerminate, bool));
+        return shouldTerminate;
+
+    @staticmethod
+    async def MarkJobForTermination(jobId: int) -> bool:
+        updatedRows: List[Dict[str, Any]] = await TranscriptionJob.update({
+            TranscriptionJob.request_terminate: True
+        }).where(
+            TranscriptionJob.id == jobId
+        ).returning(
+            TranscriptionJob.id
+        );
+    
+        rowWasUpdated = len(updatedRows) > 0;
+        return rowWasUpdated;
 
     @staticmethod
     def UpdateStatus(

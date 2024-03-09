@@ -6,7 +6,7 @@ from sanic_ext import openapi
 from typing import Optional, get_args
 import asyncio
 
-from .util import CreateLogger, GetFilenameWithExtension
+from .util import CreateLogger, GetFilenameWithExtension, GetThreadpool
 from .transcriber import Transcriber, TOmnizartMode, TTranscriptionResult
 
 from .schemas import TranscriptionJob, ResponseJobStatus, IsJobDone, ResponseScheduledJob, TOmnizartMode
@@ -25,6 +25,15 @@ def GetTranscriptionMode(mode: Optional[str], defaultMode: TOmnizartMode) -> TOm
         return defaultMode
     else:
         return mode;
+
+@transcribeBP.get("/terminate/<job_id:int>")
+@openapi.description("Terminates an existing job")
+async def cancelJob(request: Request, job_id: int):
+    terminated = await JobController.MarkJobForTermination(job_id);
+    if not terminated:
+        raise SanicException(f"job_id <{job_id}> not found", 404);
+
+    return;
 
 @transcribeBP.get("/status/<job_id:int>")
 @openapi.description("Gets the current status of a job")
@@ -82,6 +91,42 @@ async def postTranscriptionJob(request: Request):
 
     postedJob = ResponseScheduledJob(jobId);
     #return job id
+    return json(asdict(postedJob))
+
+@transcribeBP.post("/transcribe-cancellable")
+@openapi.description("transcribes a .wav file into a midi file")
+async def transcribeMusicCancellable(request: Request):
+    musicFile = request.files.get("music-file");
+
+    if musicFile is None:
+        logger.info("no file uploaded")
+        raise SanicException("no file uploaded", 400);
+
+    mode = request.args.get("mode")
+    requestedMode: TOmnizartMode = GetTranscriptionMode(mode, "music");
+    logger.info(f"Mode: query param <{mode}>, parsed <{requestedMode}>")
+
+    if not Transcriber.IsSupportedMode(requestedMode):
+        logger.warn(f"Warning, mode<{mode}> is not supported");
+
+    logger.info("upload complete");
+
+    jobId: int = await JobController.InitJob(requestedMode, musicFile.name);
+
+    threadpool = GetThreadpool();
+
+    threadpool.submit(
+        Transcriber.TranscribeCancellable_Proc,
+        musicFile.name,
+        musicFile.body,
+        requestedMode,
+        logger,
+        jobId
+    );
+    logger.info(f"Job {jobId} submitted");
+
+    #return job id
+    postedJob = ResponseScheduledJob(jobId);
     return json(asdict(postedJob))
 
 #TODO -> Omnizart can't seem to transcribe short files

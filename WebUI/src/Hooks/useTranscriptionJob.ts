@@ -37,6 +37,14 @@ interface ITranscriptionJobStatus
     postJob: (payload: File, mode: TTranscriptionMode) => void;
 }
 
+const StatusCodeList = ["NONE" , "RUNNING" , "DONE" , "STOPPING" , "TERMINATED" , "ERROR"] as const;
+type TStatusCode = typeof StatusCodeList[number];
+
+function JobStatusDone(status: TStatusCode) : boolean 
+{
+    return status === "DONE";
+}
+
 interface IJobStatus
 {
     status: string,

@@ -16,6 +16,4 @@ def AppFactory() -> Sanic:
 
 app = AppFactory();
 
-@app.get("/home")
-async def handler(request: Request):
-    return text("not-hello")
+
