@@ -23,6 +23,11 @@
     padding-right: 0 !important;
 }
 
+.px_1{
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+}
+
 .m_1{
     margin: 0.5rem 0.5rem !important;
 }

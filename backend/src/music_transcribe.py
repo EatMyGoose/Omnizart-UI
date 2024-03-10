@@ -33,7 +33,8 @@ async def cancelJob(request: Request, job_id: int):
     if not terminated:
         raise SanicException(f"job_id <{job_id}> not found", 404);
 
-    return;
+    canceledJob = ResponseScheduledJob(job_id);
+    return json(asdict(canceledJob))
 
 @transcribeBP.get("/status/<job_id:int>")
 @openapi.description("Gets the current status of a job")
@@ -51,7 +52,7 @@ async def getStatus(request: Request, job_id: int):
 @transcribeBP.get("/download-result/<job_id:int>")
 @openapi.description("Download the midi file generated from transcription")
 async def getTranscriptionResult(_: Request, job_id: int):
-    completedJob = await JobController.GetCompletedJobAsync(job_id);
+    completedJob = await JobController.GetCompletedJobAsync(logger, job_id);
     if completedJob is None:
         raise SanicException(f"no completed job for job_id <{job_id}>", 404);
     else:

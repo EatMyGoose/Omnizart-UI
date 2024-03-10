@@ -1,13 +1,13 @@
 import React from "react"
 import { useQuery } from '@tanstack/react-query';
 import { TTranscriptionMode } from '../types';
-import { GetFilenameWithouExtension } from "../util";
+import { GetFilenameWithoutExtension } from "../util";
 
 namespace Endpoints
 {
     export function PostJob(mode: TTranscriptionMode): string
     {
-        const baseURL = new URL("http://localhost:8000/music/post-transcription-job");
+        const baseURL = new URL("http://localhost:8000/music/transcribe-cancellable");
         baseURL.searchParams.set("mode", mode);
         return baseURL.toString();
     }   
@@ -20,6 +20,11 @@ namespace Endpoints
     export function DownloadResult(jobId: number): string
     {
         return `http://localhost:8000/music/download-result/${jobId}`;
+    }
+
+    export function CancelJob(jobId: number): string
+    {
+        return `http://localhost:8000/music/terminate/${jobId}`;
     }
 }
 
@@ -35,6 +40,8 @@ interface ITranscriptionJobStatus
     jobId: number | undefined,
 
     postJob: (payload: File, mode: TTranscriptionMode) => void;
+
+    cancelJob: () => void;
 }
 
 const StatusCodeList = ["NONE" , "RUNNING" , "DONE" , "STOPPING" , "TERMINATED" , "ERROR"] as const;
@@ -150,6 +157,27 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
         refetchOnWindowFocus: false
     });
 
+    const cancelJobQuery = useQuery({
+        queryKey: ["transcription-cancel", jobId],
+
+        queryFn: async({queryKey}) => {
+            const [_, jobId] =  queryKey as [string, number];
+            if(jobId === undefined)
+            {
+                console.error(`[transcription-cancel] Error - no jobId specified`);
+                return false;
+            }
+
+            const response = await fetch(
+                Endpoints.CancelJob(jobId)
+            );
+            
+            return response.status < 300 && response.status >= 200;
+        },
+        enabled: false,
+        retry: false,
+    });
+
     return {
         data: downloadDataQuery.data,
         filename,
@@ -163,7 +191,9 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
             if(payload === fileToSend) postJobQuery.refetch();
             
             setIsFetching(true);
-            setFilename(GetFilenameWithouExtension(payload.name))
-        }
+            setFilename(GetFilenameWithoutExtension(payload.name))
+        },
+
+        cancelJob: () => cancelJobQuery.refetch()
     }
 }

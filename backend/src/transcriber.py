@@ -98,10 +98,12 @@ class Transcriber:
                 );
 
                 if(transcriptionResult.status == ProcessExitStatus.terminated):
+                    logger.info("Job <{jobId}> terminated, exiting");
                     JobController.UpdateStatus(jobId, JobStatus.TERMINATED);
                     return;
                 
                 with open(transcriptionResult.filePath, "rb") as hOutputFile:
+                    logger.info("Job <{jobId}> completed, writing results");
                     filestream: bytes = hOutputFile.read();
                     outputFilename: str = GetFilenameWithExtension(transcriptionResult.filePath)     
                     JobController.CreateCompletedJob(

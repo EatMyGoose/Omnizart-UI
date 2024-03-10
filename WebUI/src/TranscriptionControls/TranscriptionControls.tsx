@@ -18,9 +18,13 @@ interface ITranscriptionControls
     transcriptionMode: TTranscriptionMode
     setTranscriptionMode: (newMode: TTranscriptionMode) => void
 
+
     disabled: boolean
 
     sendTranscriptionRequest: (file :File) => void
+    transcriptionInProgress: boolean,
+
+    sendCancelRequest: () => void,
 
     className?: string
 }
@@ -107,13 +111,26 @@ export function TranscriptionControls(props: ITranscriptionControls)
                     }
                 </select>   
             </div>
-            <Button 
-                disabled={!canSendTranscriptionRequest}
-                onClick={() => props.sendTranscriptionRequest(props.currentFile!)}
-                className={cx(util.full_width, util.my_1)}
-            >
-                Transcribe
-            </Button>
+            <div className="row">
+                <div className={cx("col s8", util.px_1)}>
+                    <Button 
+                        disabled={!canSendTranscriptionRequest}
+                        onClick={() => props.sendTranscriptionRequest(props.currentFile!)}
+                        className={cx(util.full_width, util.my_1, util.px_0)}
+                    >
+                        Transcribe
+                    </Button>
+                </div>
+                <div className={cx("col s4", util.px_1)}>
+                    <Button
+                        disabled={!props.transcriptionInProgress}
+                        onClick={props.sendCancelRequest}
+                        className={cx(util.full_width, util.my_1, util.px_0)}
+                    >
+                        Cancel
+                    </Button>
+                </div>
+            </div>
         </form>
     )
 }   

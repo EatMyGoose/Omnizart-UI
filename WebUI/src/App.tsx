@@ -49,6 +49,9 @@ function App() {
                   setTranscriptionMode={setTranscriptionMode}
                   disabled={transcriptionJob.isFetching}
                   sendTranscriptionRequest={(file) => transcriptionJob.postJob(file, transcriptionMode)}
+
+                  transcriptionInProgress={transcriptionJob.isFetching}
+                  sendCancelRequest={transcriptionJob.cancelJob}
                 />
               </div>
             </div>

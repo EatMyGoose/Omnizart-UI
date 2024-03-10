@@ -1,5 +1,6 @@
 from typing import Tuple, Optional, Dict, Any, List
 from datetime import datetime
+from logging import Logger
 from .schemas import JobStatus, TranscriptionJob, CompletedJob, TOmnizartMode, StatusName
 
 class JobController:
@@ -88,7 +89,7 @@ class JobController:
         ).run_sync();
 
     @staticmethod
-    async def GetCompletedJobAsync(jobId: int) -> Optional[Tuple[bytes, str]]:
+    async def GetCompletedJobAsync(logger: Logger, jobId: int) -> Optional[Tuple[bytes, str]]:
         completedJob = (
             await TranscriptionJob
                 .select(TranscriptionJob.completed_job.filename, TranscriptionJob.completed_job.blob)
@@ -96,10 +97,16 @@ class JobController:
                 .first()
         );
 
-        if completedJob is None:
+        logger.info(f"completedJob = {completedJob}")
+        
+        missingFile: bool = (
+            completedJob is None or 
+            completedJob["completed_job.blob"] is None or
+            completedJob["completed_job.filename"] is None
+        );
+
+        if missingFile:
+            logger.error(f"Job id<{jobId}> - missing result")
             return None;    
-    
-        print("[][]returning");
-        print(completedJob)
 
         return (completedJob["completed_job.blob"], completedJob["completed_job.filename"]);
