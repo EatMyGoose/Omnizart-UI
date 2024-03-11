@@ -69,11 +69,15 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
     const [fileToSend, setFileToSend] = React.useState<File|undefined>(undefined);
     const [mode, setMode] = React.useState<TTranscriptionMode>("music");
 
+    //ReactQuery doesn't seem to detect changes in Files used in the query key
+    //Generate a unique ID for each file instead to retrigger each change
+    const [_fileNo, _setFileNo] = React.useState<number>(0);
+
     const postJobQuery = useQuery({
-        queryKey: ["transcription-post-job", {fileToSend, mode}],
+        queryKey: ["transcription-post-job", {fileToSend, mode, _fileNo}],
         queryFn: async ({queryKey}) => {
             const [_, settings] =  queryKey as [string, {fileToSend: File, mode: TTranscriptionMode}];
-            
+
             if(settings.fileToSend === undefined) throw Error("File not found");
 
             const payload = new FormData();
@@ -91,7 +95,7 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
                 .then(json => {
                     const jobId: number = json.id;
                     if(typeof jobId !== "number") throw Error("Job ID not returned")
-
+                    
                     setJobId(jobId);
                     return jobId;
                 });
@@ -99,7 +103,7 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
         enabled: fileToSend !== undefined,
         retry:false,
         refetchOnWindowFocus: false
-    });
+    }); 
 
     React.useEffect(() => {
         if(postJobQuery.isError) setIsFetching(false); 
@@ -186,6 +190,8 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
         status,
         jobId,
         postJob: (payload: File, mode: TTranscriptionMode) => {
+            _setFileNo(n => n + 1);
+            setJobId(undefined);
             setFileToSend(payload);
             setMode(mode);
             if(payload === fileToSend) postJobQuery.refetch();
