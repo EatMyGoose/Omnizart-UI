@@ -6,6 +6,7 @@ import util from "../util.module.css"
 import { cx } from "../util";
 import { ToggleButton } from "../Components/ToggleButton";
 import { TTranscriptionMode, TTranscriptionModeValues, modeNameMap } from "../types";
+import { Spinner } from "../Components/Spinner";
 
 interface ITranscriptionControls
 {
@@ -18,13 +19,14 @@ interface ITranscriptionControls
     transcriptionMode: TTranscriptionMode
     setTranscriptionMode: (newMode: TTranscriptionMode) => void
 
-
     disabled: boolean
 
     sendTranscriptionRequest: (file :File) => void
     transcriptionInProgress: boolean,
 
     sendCancelRequest: () => void,
+    cancellable: boolean,
+    cancelling: boolean,
 
     className?: string
 }
@@ -52,6 +54,20 @@ export function TranscriptionControls(props: ITranscriptionControls)
     );
 
     const canSendTranscriptionRequest: boolean = fileSelected && !props.disabled;
+
+    const cancellingElem = (
+        <div className={cx(util.flex_row, util.centered, util.full_width)}>
+            <Spinner
+                loading={true}
+                sizeClass="small"
+                colorClass="spinner-yellow-only"
+                className={util.scale_75}
+            />
+            <div>
+                Cancelling
+            </div>
+        </div>
+    );
 
     return (
         <form 
@@ -123,11 +139,14 @@ export function TranscriptionControls(props: ITranscriptionControls)
                 </div>
                 <div className={cx("col s4", util.px_1)}>
                     <Button
-                        disabled={!props.transcriptionInProgress}
+                        disabled={!props.cancellable}
                         onClick={props.sendCancelRequest}
-                        className={cx(util.full_width, util.my_1, util.px_0)}
+                        className={cx(util.full_width, util.my_1, util.px_0, props.cancelling? "orange" : "")}
                     >
-                        Cancel
+                        {props.cancelling? 
+                            cancellingElem : 
+                            "Cancel"
+                        }
                     </Button>
                 </div>
             </div>

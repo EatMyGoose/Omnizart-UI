@@ -32,6 +32,14 @@
     margin: 0.5rem 0.5rem !important;
 }
 
+.p_1{
+    padding: 0.5rem 0.5rem !important;
+}
+
+.scale_75{
+    scale: 0.75;
+}
+
 .my_0{
     margin-top: 0rem !important; 
     margin-bottom: 0rem !important;
@@ -43,4 +51,12 @@
 
 .float_right{
     float:right;
+}
+
+.flex_row{
+    display: flex;
+}
+
+.flex_row.centered{
+    justify-content: center;
 }

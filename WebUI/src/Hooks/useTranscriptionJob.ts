@@ -35,6 +35,8 @@ interface ITranscriptionJobStatus
 
     isFetching: boolean,
     ready: boolean,
+    cancelling: boolean,
+    cancellable: boolean,
     status: string,
 
     jobId: number | undefined,
@@ -72,6 +74,7 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
     //ReactQuery doesn't seem to detect changes in Files used in the query key
     //Generate a unique ID for each file instead to retrigger each change
     const [_fileNo, _setFileNo] = React.useState<number>(0);
+    const [_cancelling, _setCancelling] = React.useState<boolean>(false);
 
     const postJobQuery = useQuery({
         queryKey: ["transcription-post-job", {fileToSend, mode, _fileNo}],
@@ -175,12 +178,24 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
             const response = await fetch(
                 Endpoints.CancelJob(jobId)
             );
+        
+            const success = response.status < 300 && response.status >= 200
             
-            return response.status < 300 && response.status >= 200;
+            if(success)
+            {
+                _setCancelling(true);
+            }
+
+            return success;
         },
         enabled: false,
         retry: false,
     });
+
+    if(!isFetching && _cancelling)
+    {
+        _setCancelling(false);
+    }
 
     return {
         data: downloadDataQuery.data,
@@ -189,6 +204,8 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
         ready,
         status,
         jobId,
+        cancellable: isFetching && jobId !== undefined,
+        cancelling: _cancelling,
         postJob: (payload: File, mode: TTranscriptionMode) => {
             _setFileNo(n => n + 1);
             setJobId(undefined);
