@@ -97,7 +97,7 @@ class JobController:
                 .first()
         );
 
-        logger.info(f"completedJob = {completedJob}")
+        logger.info(f"completedJob = {completedJob.keys()}");
         
         missingFile: bool = (
             completedJob is None or 

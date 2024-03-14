@@ -5,11 +5,13 @@ import { MidiPlayer } from "../MidiPlayer";
 import { MidiVisualizer } from "../MidiVisualizer";
 import { PlayerElement, VisualizerElement } from "html-midi-player";
 import 'material-icons/iconfont/material-icons.css';
+import { cx } from "../util";
 
 interface ITranscriptionResult
 {
-    midiFileURL?: string,
+    midiFileURL?: string
     midiFilename?: string
+    className?:string
 }
 
 export function TranscriptionResult(props: ITranscriptionResult)
@@ -27,34 +29,37 @@ export function TranscriptionResult(props: ITranscriptionResult)
         return () => {};
     }, [playerRef.current, visualizerRef.current])
 
-    const downloadLink = (props.midiFileURL === undefined? 
-        undefined:
-        (
-            <Button
-                onClick={() => midiDownloadRef.current?.click()}
-            >
-                <i className="material-icons left">file_download</i>
-                Download
-            </Button>
-        )
-    );
-    return (
-        <div>
-            <a  
-                className={util.hidden} 
-                download={props.midiFilename || "transcribed"}
-                href={props.midiFileURL}
-                ref={midiDownloadRef}
-            />
-            {downloadLink}
+    const fileAvailable = props.midiFileURL !== undefined;
 
-            <MidiPlayer 
-              src={props.midiFileURL || ""} 
-              soundFont=""
-              visualizer="#visualizer"
-              ref={playerRef}
-              className={util.full_width}
-            />
+    return (
+        <div className={props.className || ""}>
+            <div className={util.flex_row}>
+                <div className={cx(util.flex_row, util.centered, util.mx_1)}>
+                    <a  
+                        className={util.hidden} 
+                        download={props.midiFilename || "transcribed"}
+                        href={props.midiFileURL}
+                        ref={midiDownloadRef}
+                    />
+                    <Button
+                        onClick={() => midiDownloadRef.current?.click()}
+                        className={cx(util.my_1)}
+                        disabled={!fileAvailable}
+                    >
+                        <div className={cx(util.flex_row, util.centered)}>
+                            <i className="material-icons left">file_download</i>
+                            <span>Download</span>
+                        </div>
+                    </Button>
+                </div> 
+                <MidiPlayer 
+                src={props.midiFileURL || ""} 
+                soundFont=""
+                visualizer="#visualizer"
+                ref={playerRef}
+                className={util.full_width}
+                />
+            </div>
 
             <MidiVisualizer 
               src={props.midiFileURL || ""} 

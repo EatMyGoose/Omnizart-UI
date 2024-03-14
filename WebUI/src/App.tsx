@@ -7,6 +7,7 @@ import { TranscriptionResult } from './TranscriptionResult/TranscriptResult';
 import util from "./util.module.css"
 import { TTranscriptionMode } from './types';
 import { useTranscriptionJob } from './Hooks/useTranscriptionJob';
+import { cx } from './util';
 
 
 function App() {
@@ -34,9 +35,6 @@ function App() {
       <div className='container'>
         <div className="card">
           <div className="card-content">
-            <span className="card-title">
-              <h5>Transcription Controls</h5>
-            </span>
 
             <div className="section">
               <div>
@@ -58,18 +56,20 @@ function App() {
               </div>
             </div>
             <div className="divider"/>
-            <form>
-              <h6 className={util.my_1}>Transcription Result</h6>
-              <ProgressInfo
-                className={util.my_1}
-                isLoading={transcriptionJob.isFetching}
-                filename={transcriptionJob.filename}
-              />
-              <TranscriptionResult
-                midiFileURL={midiFileURL}
-                midiFilename={transcriptionJob.filename}
-              />
-            </form>
+            <div className="section">
+              <form>
+                <h6 className={cx(util.my_1, util.my_b_2)}>Transcription Result</h6>
+                <ProgressInfo
+                  isLoading={transcriptionJob.isFetching}
+                  filename={transcriptionJob.filename}
+                />
+                <TranscriptionResult
+                  midiFileURL={midiFileURL}
+                  midiFilename={transcriptionJob.filename}
+                  className={util.my_1}
+                />
+              </form>
+            </div>
           </div>
         </div>
       </div>

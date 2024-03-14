@@ -32,7 +32,9 @@ export function FileInput(props: IFileInput)
         <div 
             className={cx(props.className || "", "file-field input-field")}
         >
-            <div className="btn">
+            <div 
+                className={cx("btn", props.disabled? "disabled" : "")}
+            >
                 <span>File</span>
                 <input 
                     type="file"

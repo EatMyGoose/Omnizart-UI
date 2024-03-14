@@ -7,6 +7,8 @@ export interface IToggleButton
     onChange: (newValue: boolean) => void
     disabled?: boolean
     className?: string
+    offText: React.ReactNode
+    onText: React.ReactNode
 }
 
 export function ToggleButton(props: IToggleButton)
@@ -14,7 +16,7 @@ export function ToggleButton(props: IToggleButton)
     return (
         <div className={cx("switch", util.float_right)}>
             <label>
-              Off
+              {props.value? props.onText: props.offText}
               <input 
                 type="checkbox"
                 checked={props.value}
@@ -22,7 +24,6 @@ export function ToggleButton(props: IToggleButton)
                 disabled={props.disabled}
                 />
               <span className="lever"></span>
-              On
             </label>
         </div>
     )

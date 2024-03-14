@@ -75,20 +75,19 @@ export function TranscriptionControls(props: ITranscriptionControls)
             action="#"
             onSubmit={(e) => {e.preventDefault()}}
         >
-            <div className="row">
-                <div className={cx("col s8", util.mx_0, util.px_0)}>
-                    <h6>Select Input File</h6>
-                </div>
-                <div className="col s4">
-                    <ToggleButton
-                        className={util.float_right}
-                        value={props.autoTranscribe}
-                        onChange={props.setAutoTranscribe}
-                    />
-                </div>
+            <div className={cx(util.flex_row, util.space_between)}>
+                <h6>Select Input File</h6>
+                
+                <ToggleButton
+                    className={util.float_right}
+                    value={props.autoTranscribe}
+                    onChange={props.setAutoTranscribe}
+                    onText={"Auto-Transcribe (On)"}
+                    offText={"Auto-Transcribe (Off)"}
+                />
             </div>
             <div className={util.my_1}>
-                <label>Upload .wav file</label>
+                <label>Upload music file</label>
                 <FileInput
                     accept="audio/*" 
                     onChange={onFileSelected}
