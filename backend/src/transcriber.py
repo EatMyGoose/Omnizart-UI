@@ -12,6 +12,7 @@ from .sound_util import SoundUtil
 from .util import GetFilenameWithoutExtension, GetFilenameWithExtension
 from .JobController import JobController
 from .schemas import JobStatus, TOmnizartMode
+from .constants import CONST
 
 class ProcessExitStatus(Enum):
     completed = auto(),
@@ -158,12 +159,17 @@ class Transcriber:
         
         logger.info("starting transcription");
         cmd: str = "";
+        processName: str = (
+            "python src/mock/omnizart_mock.py"
+            if CONST.MOCK_OMNIZART else
+            "omnizart"
+        );
         if mode == "vocal":
             #Under vocal mode, the output file path argument ("-o") isn't accepted
             #Output file will simply be the input filename with the extension changed to .mid
-            cmd = f'omnizart {mode} transcribe "{srcConvertedWavFilePath}"';
+            cmd = f'{processName} {mode} transcribe "{srcConvertedWavFilePath}"';
         else:
-            cmd = f'omnizart {mode} transcribe -o "{outputPath}" "{srcConvertedWavFilePath}"';
+            cmd = f'{processName} {mode} transcribe -o "{outputPath}" "{srcConvertedWavFilePath}"';
         
         cmdList: List[str] = shlex.split(cmd);
         logger.info(f"Start command = {cmdList}")
