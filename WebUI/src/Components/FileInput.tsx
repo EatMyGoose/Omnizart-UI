@@ -1,5 +1,6 @@
 import React from "react"
 import { cx } from "../util"
+import { useToolTip } from "../Hooks/useToolTip"
 
 export interface IFileInput
 {
@@ -8,11 +9,14 @@ export interface IFileInput
     disabled?: boolean
     id?: string
     className?: string
+    tooltip?: string
 }
 
 export function FileInput(props: IFileInput)
 {
     const [filename, setFilename] = React.useState<string>("");
+
+    const refCallback = useToolTip(props.tooltip !== undefined);
 
     function onFileChanged(e: React.ChangeEvent<HTMLInputElement>)
     {   
@@ -30,7 +34,9 @@ export function FileInput(props: IFileInput)
 
     return (
         <div 
-            className={cx(props.className || "", "file-field input-field")}
+            className={cx(props.className || "", "file-field input-field tooltipped")}
+            ref={refCallback}
+            data-tooltip={props.tooltip}
         >
             <div 
                 className={cx("btn", props.disabled? "disabled" : "")}

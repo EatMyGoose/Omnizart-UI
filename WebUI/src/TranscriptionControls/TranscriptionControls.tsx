@@ -84,6 +84,7 @@ export function TranscriptionControls(props: ITranscriptionControls)
                     onChange={props.setAutoTranscribe}
                     onText={"Auto-Transcribe (On)"}
                     offText={"Auto-Transcribe (Off)"}
+                    tooltip="If on, starts transcribing immediately after uploading a file"
                 />
             </div>
             <div className={util.my_1}>
@@ -93,6 +94,7 @@ export function TranscriptionControls(props: ITranscriptionControls)
                     onChange={onFileSelected}
                     disabled={props.disabled}
                     className={util.my_0}
+                    tooltip="Select an audio file to transcribe"
                 />
             </div>
             <div className={util.my_1}>

@@ -45,6 +45,7 @@ export function TranscriptionResult(props: ITranscriptionResult)
                         onClick={() => midiDownloadRef.current?.click()}
                         className={cx(util.my_1)}
                         disabled={!fileAvailable}
+                        tooltip="Download transcription as a midi file"
                     >
                         <div className={cx(util.flex_row, util.centered)}>
                             <i className="material-icons left">file_download</i>
