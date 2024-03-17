@@ -1,7 +1,8 @@
 import React from "react"
 import { useQuery } from '@tanstack/react-query';
 import { TTranscriptionMode } from '../types';
-import { GetFilenameWithoutExtension } from "../util";
+import { GetFilenameWithoutExtension, IsSuccessfulResponse } from "../util";
+import { useToast } from "./useToast";
 
 namespace Endpoints
 {
@@ -76,6 +77,8 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
     const [_fileNo, _setFileNo] = React.useState<number>(0);
     const [_cancelling, _setCancelling] = React.useState<boolean>(false);
 
+    const toast = useToast();
+
     const postJobQuery = useQuery({
         queryKey: ["transcription-post-job", {fileToSend, mode, _fileNo}],
         queryFn: async ({queryKey}) => {
@@ -121,7 +124,7 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
                 Endpoints.PollJob(jobId)
             );
 
-            return response.json().then(
+            return await response.json().then(
                 json => {
                     const response = json as IJobStatus;
                     setStatus(response.status);
@@ -149,15 +152,30 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
     const downloadDataQuery = useQuery({
         queryKey: ["transcription-download", jobId],
         queryFn: async ({queryKey}) => {
-            const [_, jobId] =  queryKey as [string, number];
-            const response = await fetch(
-                Endpoints.DownloadResult(jobId)
-            );
+            try
+            {
+                const [_, jobId] =  queryKey as [string, number];
+                const response = await fetch(
+                    Endpoints.DownloadResult(jobId)
+                );
+                
+                const success = IsSuccessfulResponse(response.status);
+                if(!success)
+                {
+                    const errMsg = await response.text();
+                    toast.error(errMsg);
+                    throw new Error(errMsg);
+                }
 
-            return response.blob().finally(() => {
-                setIsReady(true);
+                return await response.blob().then((blob) => {
+                    setIsReady(true);
+                    return blob;
+                });
+            }
+            finally
+            {
                 setIsFetching(false);
-            });
+            }
         },
         enabled: jobComplete,
         retry:false,
@@ -171,6 +189,7 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
             const [_, jobId] =  queryKey as [string, number];
             if(jobId === undefined)
             {
+                toast.warning(`Error, no job ID available`);
                 console.error(`[transcription-cancel] Error - no jobId specified`);
                 return false;
             }
@@ -179,11 +198,16 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
                 Endpoints.CancelJob(jobId)
             );
         
-            const success = response.status < 300 && response.status >= 200
+            const success = IsSuccessfulResponse(response.status);
             
             if(success)
             {
+                toast.info(`Cancelling transcription job ${jobId}`);
                 _setCancelling(true);
+            }
+            else
+            {
+                toast.error(`Failed to cancel transcription job ${jobId}`);
             }
 
             return success;

@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser();
 
     parser.add_argument(

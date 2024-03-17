@@ -129,6 +129,17 @@ class Transcriber:
                 os.remove(transcriptionResult.filePath)
 
     @staticmethod
+    def _GetProcessName(logger: Logger) -> str:
+        if CONST.MOCK_OMNIZART == False:
+            return "omnizart"
+        elif CONST.MOCK_OMNIZART_ERROR: 
+            logger.info("[MOCK] Using error mocking process");
+            return "python src/mock/omnizart_error_mock.py";
+        else:
+            logger.info("[MOCK] Using mock process");
+            return "python src/mock/omnizart_mock.py";
+
+    @staticmethod
     def TranscribeCancellable(
         jobId: int,
         dir: str,
@@ -159,11 +170,8 @@ class Transcriber:
         
         logger.info("starting transcription");
         cmd: str = "";
-        processName: str = (
-            "python src/mock/omnizart_mock.py"
-            if CONST.MOCK_OMNIZART else
-            "omnizart"
-        );
+        processName: str = Transcriber._GetProcessName(logger);
+        
         if mode == "vocal":
             #Under vocal mode, the output file path argument ("-o") isn't accepted
             #Output file will simply be the input filename with the extension changed to .mid
