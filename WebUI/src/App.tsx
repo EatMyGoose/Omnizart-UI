@@ -19,6 +19,8 @@ function App() {
   
   const midiFileURL = useObjectURL(transcriptionJob.data, transcriptionJob.ready);
 
+  const [activePlayer, setActivePlayer] = React.useState<string | undefined>(undefined);
+
   return (
     <>
       <nav>
@@ -52,6 +54,9 @@ function App() {
 
                   transcriptionInProgress={transcriptionJob.isFetching}
                   sendCancelRequest={transcriptionJob.cancelJob}
+
+                  activePlayer={activePlayer}
+                  setActivePlayer={setActivePlayer}
                 />
               </div>
             </div>
@@ -66,6 +71,10 @@ function App() {
                 <TranscriptionResult
                   midiFileURL={midiFileURL}
                   midiFilename={transcriptionJob.filename}
+                  
+                  activePlayer={activePlayer}
+                  setActivePlayer={setActivePlayer}
+
                   className={util.my_1}
                 />
               </form>

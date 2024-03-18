@@ -7,6 +7,7 @@ import { cx } from "../util";
 import { ToggleButton } from "../Components/ToggleButton";
 import { TTranscriptionMode, TTranscriptionModeValues, modeNameMap } from "../types";
 import { Spinner } from "../Components/Spinner";
+import { useSingleMusicPlayer } from "../Hooks/useSingleMusicPlayer";
 
 interface ITranscriptionControls
 {
@@ -28,6 +29,9 @@ interface ITranscriptionControls
     cancellable: boolean,
     cancelling: boolean,
 
+    activePlayer?: string
+    setActivePlayer: (string: string | undefined) => void
+
     className?: string
 }
 
@@ -47,10 +51,19 @@ export function TranscriptionControls(props: ITranscriptionControls)
         }
     }
 
+    const playerRef = React.useRef<HTMLAudioElement>(null);
+
     const fileSelected: boolean = props.currentFile !== null;
     const originalFileURL = useObjectURL(
         props.currentFile || undefined, 
         fileSelected
+    );
+
+    const player = useSingleMusicPlayer(
+        "original",
+        props.setActivePlayer,
+        props.activePlayer,
+        () => playerRef.current?.pause()
     );
 
     const canSendTranscriptionRequest: boolean = fileSelected && !props.disabled;
@@ -104,6 +117,9 @@ export function TranscriptionControls(props: ITranscriptionControls)
                     controls 
                     src={originalFileURL}
                     className={cx(util.full_width)}
+                    onPlay={player.start}
+                    onPause={player.stop}
+                    ref={playerRef}
                 />
             </div>
             <div className={util.my_1}>                  
@@ -121,7 +137,7 @@ export function TranscriptionControls(props: ITranscriptionControls)
                                 key={mode}
                                 value={mode}
                             >
-                                {modeNameMap.get(mode)}
+                                {modeNameMap.get(mode)} 
                             </option>
                             )
                         })

@@ -6,12 +6,16 @@ import { MidiVisualizer } from "../MidiVisualizer";
 import { PlayerElement, VisualizerElement } from "html-midi-player";
 import 'material-icons/iconfont/material-icons.css';
 import { cx } from "../util";
+import { useSingleMusicPlayer } from "../Hooks/useSingleMusicPlayer";
 
 interface ITranscriptionResult
 {
     midiFileURL?: string
     midiFilename?: string
     className?:string
+
+    activePlayer?: string
+    setActivePlayer: (string: string | undefined) => void
 }
 
 export function TranscriptionResult(props: ITranscriptionResult)
@@ -20,14 +24,33 @@ export function TranscriptionResult(props: ITranscriptionResult)
     const playerRef = React.useRef<PlayerElement>(null);
     const visualizerRef = React.useRef<VisualizerElement>(null);
 
+    const player = useSingleMusicPlayer(
+        "midi", 
+        props.setActivePlayer,
+        props.activePlayer,
+        () => playerRef.current?.stop()
+    );
+
     React.useEffect(() => {
         if(playerRef.current && visualizerRef.current)
         {
-          playerRef.current.addVisualizer(visualizerRef.current);
-          return () => playerRef.current!.removeVisualizer(visualizerRef.current!);
+            const playerElem = playerRef.current;
+            playerElem.addVisualizer(visualizerRef.current);
+
+            const startPlayerCallback = () => player.start();
+            playerElem.addEventListener("start", startPlayerCallback);
+
+            const endPlayerCallback = () => player.stop();
+            playerElem.addEventListener("stop", endPlayerCallback);
+
+            return () => {
+                playerElem.removeVisualizer(visualizerRef.current!);
+                playerElem.removeEventListener("start", startPlayerCallback);
+                playerElem.removeEventListener("stop", endPlayerCallback);
+            } 
         }
         return () => {};
-    }, [playerRef.current, visualizerRef.current])
+    }, [playerRef.current, visualizerRef.current, player])
 
     const fileAvailable = props.midiFileURL !== undefined;
 
@@ -54,11 +77,12 @@ export function TranscriptionResult(props: ITranscriptionResult)
                     </Button>
                 </div> 
                 <MidiPlayer 
-                src={props.midiFileURL || ""} 
-                soundFont=""
-                visualizer="#visualizer"
-                ref={playerRef}
-                className={util.full_width}
+                    src={props.midiFileURL || ""} 
+                    soundFont=""
+                    visualizer="#visualizer"
+                    ref={playerRef}
+                    className={util.full_width}
+
                 />
             </div>
 
