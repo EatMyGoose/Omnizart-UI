@@ -3,6 +3,8 @@ from logging import Logger, StreamHandler, Formatter
 from pathlib import Path
 import os
 import concurrent.futures
+from typing import Dict, Any, cast
+from datetime import datetime
 
 from .constants import CONST
 
@@ -39,3 +41,17 @@ threadpool = concurrent.futures.ThreadPoolExecutor();
 
 def GetThreadpool() -> concurrent.futures.ThreadPoolExecutor:
     return threadpool;
+
+def ConvertDatetimeToIsoString(data: Dict[str, Any]) -> Dict[str, Any]:
+    def ConvertDatetimeToISOString(value: Any) -> Any:
+        if isinstance(value, datetime):
+            return cast(datetime, value).isoformat();
+        else:
+            return value;
+
+    return {
+        key:
+        ConvertDatetimeToISOString(value) 
+        for key, value in 
+        data.items()
+    };

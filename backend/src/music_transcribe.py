@@ -3,13 +3,13 @@ import os
 from sanic import Request, Blueprint, file, raw, json
 from sanic.exceptions import SanicException
 from sanic_ext import openapi
-from typing import Optional, get_args
+from typing import Optional, get_args, List
 import asyncio
 
-from .util import CreateLogger, GetFilenameWithExtension, GetThreadpool
+from .util import CreateLogger, GetFilenameWithExtension, GetThreadpool, ConvertDatetimeToIsoString
 from .transcriber import Transcriber, TOmnizartMode, TTranscriptionResult
 
-from .schemas import TranscriptionJob, ResponseJobStatus, IsJobDone, ResponseScheduledJob, TOmnizartMode
+from .schemas import TranscriptionJob, IsJobDone, ResponseScheduledJob, TOmnizartMode, ResponseTranscriptionJob
 from .JobController import JobController
 
 from dataclasses import asdict
@@ -26,8 +26,20 @@ def GetTranscriptionMode(mode: Optional[str], defaultMode: TOmnizartMode) -> TOm
     else:
         return mode;
 
+@transcribeBP.get("/status/all")
+@openapi.description("Gets the status of all jobs")
+@openapi.response(200, List[ResponseTranscriptionJob], "list of jobs statuses")
+async def listStatus(_: Request):
+    jobList = await TranscriptionJob.select();
+
+    return json([
+        ConvertDatetimeToIsoString(asdict(ResponseTranscriptionJob.FromTranscriptionJobDBO(job)))
+        for job in jobList
+    ]);
+
 @transcribeBP.get("/terminate/<job_id:int>")
 @openapi.description("Terminates an existing job")
+@openapi.response(200, ResponseScheduledJob, "Scheduled Job")
 async def cancelJob(request: Request, job_id: int):
     terminated = await JobController.MarkJobForTermination(job_id);
     if not terminated:
@@ -38,19 +50,19 @@ async def cancelJob(request: Request, job_id: int):
 
 @transcribeBP.get("/status/<job_id:int>")
 @openapi.description("Gets the current status of a job")
-async def getStatus(request: Request, job_id: int):
+@openapi.response(200, ResponseTranscriptionJob, "Job Status")
+async def getStatus(_: Request, job_id: int):
     job = await TranscriptionJob.select().where(TranscriptionJob.id == job_id).first()
     if job is None:
         raise SanicException(f"job_id <{job_id}> not found", 404);
     else:
-        jobStatus = ResponseJobStatus(
-            job["status"],
-            done = IsJobDone(job["status"])
-        )
-        return json(asdict(jobStatus))
+        jobStatus = ResponseTranscriptionJob.FromTranscriptionJobDBO(job);
+
+        return json(ConvertDatetimeToIsoString(asdict(jobStatus)))
     
 @transcribeBP.get("/download-result/<job_id:int>")
 @openapi.description("Download the midi file generated from transcription")
+@openapi.response(200, {"audio/midi": bytes}, "midi file blob")
 async def getTranscriptionResult(_: Request, job_id: int):
     completedJob = await JobController.GetCompletedJobAsync(logger, job_id);
     if completedJob is None:
@@ -96,6 +108,7 @@ async def postTranscriptionJob(request: Request):
 
 @transcribeBP.post("/transcribe-cancellable")
 @openapi.description("transcribes a .wav file into a midi file")
+@openapi.response(200, ResponseScheduledJob, "Scheduled job")
 async def transcribeMusicCancellable(request: Request):
     musicFile = request.files.get("music-file");
 
@@ -133,6 +146,7 @@ async def transcribeMusicCancellable(request: Request):
 #TODO -> Omnizart can't seem to transcribe short files
 @transcribeBP.post("/transcribe")
 @openapi.description("transcribes a .wav file into a midi file")
+@openapi.response(200, {"audio/midi": bytes}, "midi file blob")
 async def transcribeMusic(request: Request):
     musicFile = request.files.get("music-file");
 

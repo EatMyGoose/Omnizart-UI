@@ -57,6 +57,12 @@ function JobStatusDone(status: TStatusCode) : boolean
 
 interface IJobStatus
 {
+    id:number,
+    filename: string,
+    mode: string,
+    start_time: string,
+    end_time?: string,
+    request_terminate: boolean,
     status: string,
     done: boolean
 }
@@ -143,10 +149,14 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
     });
 
     React.useEffect(() => {
-        if(pollJobQuery.isError) setIsFetching(false); 
+        if(pollJobQuery.isError) 
+        {
+            toast.error(`Failed to process job ID<${jobId}>`);
+            setIsFetching(false); 
+        }
     }
-    , [pollJobQuery.isError])
-
+    , [pollJobQuery.isError, jobId])
+    
     const jobComplete: boolean = pollJobQuery.data?.done || false;
 
     const downloadDataQuery = useQuery({
@@ -155,6 +165,12 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
             try
             {
                 const [_, jobId] =  queryKey as [string, number];
+                if(pollJobQuery.data?.request_terminate === true)
+                {
+                    toast.info(`Job ${jobId} cancelled successfully`);
+                    return;
+                }
+
                 const response = await fetch(
                     Endpoints.DownloadResult(jobId)
                 );
