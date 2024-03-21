@@ -1,0 +1,23 @@
+html{
+    height: 100%;
+}
+
+body{
+    height: 100%;
+}
+
+#root{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-row{
+    width: 100%;
+}
+
+.app-row-fill{
+    width: 100%;
+    height: 100%;
+    flex: 1;
+}

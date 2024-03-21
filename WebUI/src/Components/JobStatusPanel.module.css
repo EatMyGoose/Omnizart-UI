@@ -1,0 +1,13 @@
+
+.panel{
+    display: flex;
+}
+
+.panel p{
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.panel .info{
+    flex:1;
+}   

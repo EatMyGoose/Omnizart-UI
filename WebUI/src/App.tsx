@@ -1,13 +1,13 @@
 import React from 'react'
 import './App.css'
 import { useObjectURL } from './useObjectURL';
-import { TranscriptionControls } from './TranscriptionControls/TranscriptionControls';
-import { ProgressInfo } from './ProgressInfo/ProgressInfo';
-import { TranscriptionResult } from './TranscriptionResult/TranscriptResult';
 import util from "./util.module.css"
 import { TTranscriptionMode } from './types';
 import { useTranscriptionJob } from './Hooks/useTranscriptionJob';
+import { AppBody } from './AppBody/AppBody';
+import { Sidebar } from './Sidebar/Sidebar';
 import { cx } from './util';
+import { useJobHistory } from './Hooks/useJobHistoryList';
 
 
 function App() {
@@ -21,9 +21,11 @@ function App() {
 
   const [activePlayer, setActivePlayer] = React.useState<string | undefined>(undefined);
 
+  const jobHistory = useJobHistory();
+
   return (
     <>
-      <nav>
+      <nav className='app-row'>
         <div className="nav-wrapper">
           <div className='container'>
             <span className="brand-logo">Omnizart Web UI</span>
@@ -34,52 +36,24 @@ function App() {
         </div>
       </nav>
 
-      <div className='container'>
-        <div className="card">
-          <div className="card-content">
-
-            <div className="section">
-              <div>
-                <TranscriptionControls
-                  autoTranscribe={autoTranscribe}
-                  setAutoTranscribe={setAutoTranscribe}
-                  currentFile={file}
-                  onFileChanged={setFile}
-                  transcriptionMode={transcriptionMode}
-                  setTranscriptionMode={setTranscriptionMode}
-                  disabled={transcriptionJob.isFetching}
-                  sendTranscriptionRequest={(file) => transcriptionJob.postJob(file, transcriptionMode)}
-                  cancelling={transcriptionJob.cancelling}
-                  cancellable={transcriptionJob.cancellable}
-
-                  transcriptionInProgress={transcriptionJob.isFetching}
-                  sendCancelRequest={transcriptionJob.cancelJob}
-
-                  activePlayer={activePlayer}
-                  setActivePlayer={setActivePlayer}
-                />
-              </div>
-            </div>
-            <div className="divider"/>
-            <div className="section">
-              <form>
-                <h6 className={cx(util.my_1, util.my_b_2)}>Transcription Result</h6>
-                <ProgressInfo
-                  isLoading={transcriptionJob.isFetching}
-                  filename={transcriptionJob.filename}
-                />
-                <TranscriptionResult
-                  midiFileURL={midiFileURL}
-                  midiFilename={transcriptionJob.filename}
-                  
-                  activePlayer={activePlayer}
-                  setActivePlayer={setActivePlayer}
-
-                  className={util.my_1}
-                />
-              </form>
-            </div>
-          </div>
+      <div className='row app-row-fill'>
+        <Sidebar
+          className={cx('col s2', util.full_height)}
+          jobHistory={jobHistory}
+        />
+        <div className='col s10'>
+          <AppBody
+            autoTranscribe={autoTranscribe}
+            setAutoTranscribe={setAutoTranscribe}
+            file={file}
+            setFile={setFile}
+            transcriptionMode={transcriptionMode}
+            setTranscriptionMode={setTranscriptionMode}
+            transcriptionJob={transcriptionJob}
+            activePlayer={activePlayer}
+            setActivePlayer={setActivePlayer}
+            midiFileURL={midiFileURL}
+          />
         </div>
       </div>
     </>

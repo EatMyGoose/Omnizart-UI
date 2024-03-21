@@ -5,6 +5,8 @@ import './index.css'
 import "materialize-css/dist/css/materialize.css"
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
+import "./fullHeightSidebar.css"
+
 const queryClient = new QueryClient()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

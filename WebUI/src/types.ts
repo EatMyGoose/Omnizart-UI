@@ -8,3 +8,23 @@ export const modeNameMap = new Map<TTranscriptionMode, string>([
   ["vocal", "Vocal"],
   ["vocal-contour", "Vocal Contour"]
 ]);
+
+export const StatusCodeList = ["NONE" , "RUNNING" , "DONE" , "STOPPING" , "TERMINATED" , "ERROR"] as const;
+type TStatusCode = typeof StatusCodeList[number];
+
+export function IsJobReady(status: string) : boolean 
+{
+    return status === "DONE";
+}
+
+export interface IJobStatus
+{
+    id:number,
+    filename: string,
+    mode: string,
+    start_time: string,
+    end_time?: string,
+    request_terminate: boolean,
+    status: string,
+    done: boolean
+}

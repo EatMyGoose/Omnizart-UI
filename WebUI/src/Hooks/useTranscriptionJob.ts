@@ -1,35 +1,11 @@
 import React from "react"
 import { useQuery } from '@tanstack/react-query';
-import { TTranscriptionMode } from '../types';
+import { IJobStatus, TTranscriptionMode } from '../types';
 import { GetFilenameWithoutExtension, IsSuccessfulResponse } from "../util";
 import { useToast } from "./useToast";
+import { Endpoints } from "../Endpoints/Endpoints";
 
-namespace Endpoints
-{
-    export function PostJob(mode: TTranscriptionMode): string
-    {
-        const baseURL = new URL("http://localhost:8000/music/transcribe-cancellable");
-        baseURL.searchParams.set("mode", mode);
-        return baseURL.toString();
-    }   
-
-    export function PollJob(jobId: number) : string
-    {
-        return `http://localhost:8000/music/status/${jobId}`;
-    }
-
-    export function DownloadResult(jobId: number): string
-    {
-        return `http://localhost:8000/music/download-result/${jobId}`;
-    }
-
-    export function CancelJob(jobId: number): string
-    {
-        return `http://localhost:8000/music/terminate/${jobId}`;
-    }
-}
-
-interface ITranscriptionJobStatus
+export interface ITranscriptionJobStatus
 {
     data: Blob | undefined
     filename: string | undefined,
@@ -45,26 +21,6 @@ interface ITranscriptionJobStatus
     postJob: (payload: File, mode: TTranscriptionMode) => void;
 
     cancelJob: () => void;
-}
-
-const StatusCodeList = ["NONE" , "RUNNING" , "DONE" , "STOPPING" , "TERMINATED" , "ERROR"] as const;
-type TStatusCode = typeof StatusCodeList[number];
-
-function JobStatusDone(status: TStatusCode) : boolean 
-{
-    return status === "DONE";
-}
-
-interface IJobStatus
-{
-    id:number,
-    filename: string,
-    mode: string,
-    start_time: string,
-    end_time?: string,
-    request_terminate: boolean,
-    status: string,
-    done: boolean
 }
 
 export function useTranscriptionJob() : ITranscriptionJobStatus
