@@ -8,6 +8,7 @@ import { AppBody } from './AppBody/AppBody';
 import { Sidebar } from './Sidebar/Sidebar';
 import { cx } from './util';
 import { useJobHistory } from './Hooks/useJobHistoryList';
+import { SidebarFAB } from './SidebarFAB/SIdebarFAB';
 
 
 function App() {
@@ -22,6 +23,8 @@ function App() {
   const [activePlayer, setActivePlayer] = React.useState<string | undefined>(undefined);
 
   const jobHistory = useJobHistory();
+
+  const [showSidebar, setShowSidebar] = React.useState<boolean>(true);
 
   return (
     <>
@@ -38,10 +41,15 @@ function App() {
 
       <div className='row app-row-fill'>
         <Sidebar
-          className={cx('col s2', util.full_height)}
+          className={cx('col s2', util.full_height, showSidebar? "" : "hide")}
           jobHistory={jobHistory}
         />
-        <div className='col s10'>
+        <div className={cx('col', util.relative, showSidebar? "s10" : "s12")}>
+          <SidebarFAB
+            sidebarOpen={showSidebar}
+            setSidebarOpen={setShowSidebar}
+            className={cx(util.my_1, util.absolute)}
+          />
           <AppBody
             autoTranscribe={autoTranscribe}
             setAutoTranscribe={setAutoTranscribe}

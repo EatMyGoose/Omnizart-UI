@@ -84,3 +84,11 @@
 .overflow_y_scroll{
     overflow-y: scroll;
 }
+
+.relative{
+    position:relative;
+}
+
+.absolute{
+    position: absolute !important;
+}
