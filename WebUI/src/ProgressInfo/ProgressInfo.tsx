@@ -50,23 +50,21 @@ export function ProgressInfo(props: IProgressInfo)
         undefined
     );
 
-    const elapsedSeconds: number | undefined = (endTime !== undefined)?
+    const elapsedSeconds: number = (endTime !== undefined)?
         (endTime.getTime() - startTime.getTime()) / 1000 :
         0;
 
     const elapsedTime = (
-        (elapsedSeconds !== undefined)?
-        (<div className="input-field">
+        <div className="input-field">
             <input 
                 id="elapsedTime" 
                 type="text" 
                 className="validate"
-                disabled
+                readOnly
                 value={`${elapsedSeconds.toFixed(1)} s`}
             />
             <label htmlFor="elapsedTime" className="active">Elapsed Time</label>
-        </div>) :
-        undefined
+        </div>
     )
 
     return (
@@ -78,8 +76,8 @@ export function ProgressInfo(props: IProgressInfo)
                         id="uploadedFilename" 
                         type="text" 
                         className="validate"
-                        disabled
-                        value={props.filename}
+                        readOnly
+                        value={props.filename || ""}
                     />
                     <label htmlFor="uploadedFilename" className="active">Filename</label>
                 </div>

@@ -18,7 +18,7 @@ export function Checkbox(props: ICheckbox)
                 type="checkbox" 
                 className="filled-in" 
                 checked={props.checked} 
-                onClick={(e) => props.onClick((e.target as HTMLInputElement).checked)}
+                onChange={(e) => props.onClick((e.target as HTMLInputElement).checked)}
             />
             <span>{props.label}</span>
         </label>
