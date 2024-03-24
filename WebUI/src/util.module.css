@@ -32,6 +32,11 @@
     padding-right: 0;
 }
 
+.px_0.px_0{
+    padding-left: 0;
+    padding-right: 0;
+}
+
 .px_1{
     padding-left: 0.5rem;
     padding-right: 0.5rem;
@@ -91,4 +96,14 @@
 
 .absolute{
     position: absolute !important;
+}
+
+.truncate_text{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.truncate_content{
+    overflow: hidden;
 }
