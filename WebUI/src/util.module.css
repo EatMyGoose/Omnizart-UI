@@ -59,6 +59,11 @@
     margin-bottom: 0rem;
 }
 
+.my_0.my_0{
+    margin-top: 0rem; 
+    margin-bottom: 0rem;
+}
+
 .hidden{
     display: none;
 }
@@ -98,6 +103,10 @@
     position: absolute !important;
 }
 
+.fixed{
+    position: fixed !important;
+}
+
 .truncate_text{
     white-space: nowrap;
     overflow: hidden;
@@ -106,4 +115,8 @@
 
 .truncate_content{
     overflow: hidden;
+}
+
+.z_10{
+    z-index: 10;
 }

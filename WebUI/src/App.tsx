@@ -28,7 +28,7 @@ function App() {
 
   return (
     <>
-      <nav className='app-row'>
+      <nav className={cx('app-row', util.z_10)}>
         <div className="nav-wrapper">
           <div className='container'>
             <span className="brand-logo">Omnizart Web UI</span>
@@ -39,16 +39,16 @@ function App() {
         </div>
       </nav>
 
-      <div className='row app-row-fill'>
+      <div className={cx('row app-row-fill', util.my_0, util.my_0)}>
         <Sidebar
-          className={cx('col s2', util.full_height, showSidebar? "" : "hide")}
+          className={cx('col s2', util.full_height, util.my_0, util.my_0, showSidebar? "" : "hide")}
           jobHistory={jobHistory}
         />
-        <div className={cx('col', util.relative, showSidebar? "s10" : "s12")}>
+        <div className={cx('col', util.relative, util.full_height, util.overflow_y_scroll, showSidebar? "s10" : "s12")}>
           <SidebarFAB
             sidebarOpen={showSidebar}
             setSidebarOpen={setShowSidebar}
-            className={cx(util.my_1, util.absolute)}
+            className={cx(util.my_1, util.fixed)} 
           />
           <AppBody
             autoTranscribe={autoTranscribe}
