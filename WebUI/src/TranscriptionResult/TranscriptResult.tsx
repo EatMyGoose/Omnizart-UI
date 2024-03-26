@@ -2,11 +2,11 @@ import React from "react"
 import { Button } from "../Components/Button";
 import util from "../util.module.css"
 import { MidiPlayer } from "../MidiPlayer";
-import { MidiVisualizer } from "../MidiVisualizer";
 import { PlayerElement, VisualizerElement } from "html-midi-player";
 import 'material-icons/iconfont/material-icons.css';
 import { cx } from "../util";
 import { useSingleMusicPlayer } from "../Hooks/useSingleMusicPlayer";
+import { MidiVisualizer } from "../MidiVisualizer/MidiVisualizer";
 
 interface ITranscriptionResult
 {
@@ -86,11 +86,12 @@ export function TranscriptionResult(props: ITranscriptionResult)
                 />
             </div>
 
-            <MidiVisualizer 
+            <MidiVisualizer
               src={props.midiFileURL || ""} 
               id="visualizer" 
               type="piano-roll"  
               ref={visualizerRef}
+              className={cx("z-depth-1", util.my_1)}
             />
         </div>
     );

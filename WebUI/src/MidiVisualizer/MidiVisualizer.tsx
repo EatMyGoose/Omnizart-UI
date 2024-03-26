@@ -1,6 +1,8 @@
 import React from "react"
 import "html-midi-player"
 import { VisualizerElement } from "html-midi-player";
+import "./MidiVisualizer.css"
+import { cx } from "../util";
 
 interface IMidiVisualizer
 {
