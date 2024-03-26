@@ -4,6 +4,7 @@ from pathlib import Path
 import os
 import concurrent.futures
 from typing import Dict, Any, cast
+import re
 from datetime import datetime
 
 from .constants import CONST
@@ -55,3 +56,6 @@ def ConvertDatetimeToIsoString(data: Dict[str, Any]) -> Dict[str, Any]:
         for key, value in 
         data.items()
     };
+
+def SanitiseFilename(path:str) -> str:
+    return re.sub(r"[^a-z|A-Z|0-9-_.]", "_", path);

@@ -6,7 +6,7 @@ from sanic_ext import openapi
 from typing import Optional, get_args, List
 import asyncio
 
-from .util import CreateLogger, GetFilenameWithExtension, GetThreadpool, ConvertDatetimeToIsoString
+from .util import CreateLogger, GetFilenameWithExtension, GetThreadpool, ConvertDatetimeToIsoString, SanitiseFilename
 from .transcriber import Transcriber, TOmnizartMode, TTranscriptionResult
 
 from .schemas import TranscriptionJob, IsJobDone, ResponseScheduledJob, TOmnizartMode, ResponseTranscriptionJob
@@ -68,10 +68,13 @@ async def getTranscriptionResult(_: Request, job_id: int):
     if completedJob is None:
         raise SanicException(f"no completed job for job_id <{job_id}>", 404);
     else:
-        (blob, filename) = completedJob
+        (blob, rawFilename) = completedJob
+        sanitisedFilename: str = SanitiseFilename(rawFilename);
+
+        logger.info(f"Downloading, sanitised filename = <{sanitisedFilename}>");
         return raw(
             blob,
-            headers={"Content-Disposition": f"attachment; filename={filename}"},
+            headers={"Content-Disposition": f"attachment; filename={sanitisedFilename}"},
             content_type="audio/midi"
         );
 

@@ -10,7 +10,7 @@ export const modeNameMap = new Map<TTranscriptionMode, string>([
 ]);
 
 export const StatusCodeList = ["NONE" , "RUNNING" , "DONE" , "STOPPING" , "TERMINATED" , "ERROR"] as const;
-type TStatusCode = typeof StatusCodeList[number];
+//type TStatusCode = typeof StatusCodeList[number];
 
 export function IsJobReady(status: string) : boolean 
 {
