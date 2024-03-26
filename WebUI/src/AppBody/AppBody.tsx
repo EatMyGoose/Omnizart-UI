@@ -30,7 +30,7 @@ export interface IAppBody
 export function AppBody(props: IAppBody)
 {
     return (
-        <div className={cx("container", props.className || "")}>
+        <div className={cx(props.className || "")}>
             <div className="card">
                 <div className="card-content">
                     <div className="section">

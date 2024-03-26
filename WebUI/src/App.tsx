@@ -1,5 +1,5 @@
 import React from 'react'
-import './App.css'
+import styles from './App.module.css'
 import { useObjectURL } from './useObjectURL';
 import util from "./util.module.css"
 import { TTranscriptionMode } from './types';
@@ -39,16 +39,18 @@ function App() {
         </div>
       </nav>
 
-      <div className={cx('row app-row-fill', util.my_0, util.my_0)}>
-        <Sidebar
-          className={cx('col s2', util.full_height, util.my_0, util.my_0, showSidebar? "" : "hide")}
-          jobHistory={jobHistory}
-        />
-        <div className={cx('col', util.relative, util.full_height, util.overflow_y_scroll, showSidebar? "s10" : "s12")}>
+      <div className={cx('app-row-fill', util.my_0, util.my_0, util.flex_row, styles.body_container)}>
+        <div className={cx(styles.sidebar,showSidebar? "" : styles.hide)}>
+          <Sidebar
+            className={cx(util.full_height, util.my_0, util.my_0)}
+            jobHistory={jobHistory}
+          />
+        </div>
+        <div className={cx(styles.body_container, util.relative, util.full_height, util.overflow_y_scroll, showSidebar? "s10" : "s12")}>
           <SidebarFAB
             sidebarOpen={showSidebar}
             setSidebarOpen={setShowSidebar}
-            className={cx(util.my_1, util.fixed)} 
+            className={cx(util.m_1, util.fixed)} 
           />
           <AppBody
             autoTranscribe={autoTranscribe}
@@ -61,6 +63,7 @@ function App() {
             activePlayer={activePlayer}
             setActivePlayer={setActivePlayer}
             midiFileURL={midiFileURL}
+            className={styles.app_body}
           />
         </div>
       </div>
