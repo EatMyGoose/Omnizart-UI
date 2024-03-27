@@ -1,0 +1,7 @@
+.navbar{
+    height: 20rem !important;
+}
+
+.disabled_link{
+    pointer-events: none;
+}

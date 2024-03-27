@@ -9,6 +9,7 @@ import { Sidebar } from './Sidebar/Sidebar';
 import { cx } from './util';
 import { useJobHistory } from './Hooks/useJobHistoryList';
 import { SidebarFAB } from './SidebarFAB/SIdebarFAB';
+import { Navbar } from './Navbar/Navbar';
 
 
 function App() {
@@ -28,17 +29,8 @@ function App() {
 
   return (
     <>
-      <nav className={cx('app-row', util.z_10)}>
-        <div className="nav-wrapper">
-          <div className='container'>
-            <span className="brand-logo">Omnizart Web UI</span>
-            <ul id="nav-mobile" className="right hide-on-med-and-down">
-              <li><a href="#">Rats</a></li>
-            </ul>
-          </div>
-        </div>
-      </nav>
-
+      <Navbar/>
+      
       <div className={cx('app-row-fill', util.my_0, util.my_0, util.flex_row, styles.body_container)}>
         <div className={cx(styles.sidebar,showSidebar? "" : styles.hide)}>
           <Sidebar
