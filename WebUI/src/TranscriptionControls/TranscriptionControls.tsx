@@ -5,7 +5,7 @@ import { Button } from "../Components/Button";
 import util from "../util.module.css"
 import { cx } from "../util";
 import { ToggleButton } from "../Components/ToggleButton";
-import { TTranscriptionMode, TTranscriptionModeValues, modeNameMap } from "../types";
+import { TTranscriptionMode, TTranscriptionModeValues, modeNameMap, supportedModes } from "../types";
 import { Spinner } from "../Components/Spinner";
 import { useSingleMusicPlayer } from "../Hooks/useSingleMusicPlayer";
 
@@ -136,6 +136,7 @@ export function TranscriptionControls(props: ITranscriptionControls)
                             <option
                                 key={mode}
                                 value={mode}
+                                disabled={!supportedModes.has(mode)}
                             >
                                 {modeNameMap.get(mode)} 
                             </option>

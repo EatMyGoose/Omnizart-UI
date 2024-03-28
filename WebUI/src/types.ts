@@ -9,6 +9,12 @@ export const modeNameMap = new Map<TTranscriptionMode, string>([
   ["vocal-contour", "Vocal Contour"]
 ]);
 
+export const supportedModes = new Set<TTranscriptionMode>([
+  "music",
+  "vocal",
+  "vocal-contour"
+])
+
 export const StatusCodeList = ["NONE" , "RUNNING" , "DONE" , "STOPPING" , "TERMINATED" , "ERROR"] as const;
 //type TStatusCode = typeof StatusCodeList[number];
 
