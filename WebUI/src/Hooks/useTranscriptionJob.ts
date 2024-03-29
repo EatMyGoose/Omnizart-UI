@@ -24,20 +24,31 @@ export interface ITranscriptionJobStatus
     cancelJob: () => void;
 }
 
+interface IPostJobParams
+{
+    fileToSend: File | undefined,
+    mode: TTranscriptionMode,
+    
+    //ReactQuery doesn't seem to detect changes in Files used in the query key
+    //Generate a unique ID for each file instead to retrigger each change
+    _fileNo: number;
+}
+
 export function useTranscriptionJob() : ITranscriptionJobStatus
 {
+    const [postJobParams, setPostJobParams] = React.useState<IPostJobParams>({
+        fileToSend: undefined,
+        mode: "music",
+        _fileNo: 0
+    });
+
     const [filename, setFilename] = React.useState<string| undefined>(undefined);
     const [isFetching, setIsFetching] = React.useState<boolean>(false);
     const [ready, setIsReady] = React.useState<boolean>(false);
     const [status, setStatus] = React.useState<string>("");
     const [jobId, setJobId] = React.useState<number | undefined>(undefined);
 
-    const [fileToSend, setFileToSend] = React.useState<File|undefined>(undefined);
-    const [mode, setMode] = React.useState<TTranscriptionMode>("music");
 
-    //ReactQuery doesn't seem to detect changes in Files used in the query key
-    //Generate a unique ID for each file instead to retrigger each change
-    const [_fileNo, _setFileNo] = React.useState<number>(0);
     const [_cancelling, _setCancelling] = React.useState<boolean>(false);
 
     const _refreshJobHistoryAsync = useInvalidateJobHistory();
@@ -45,10 +56,10 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
     const _toast = useToast();
 
     const postJobQuery = useQuery({
-        queryKey: ["transcription-post-job", {fileToSend, mode, _fileNo}],
+        queryKey: ["transcription-post-job", postJobParams],
         queryFn: async ({queryKey}) => {
             const [_, settings] =  queryKey as [string, {fileToSend: File, mode: TTranscriptionMode}];
-
+            
             if(settings.fileToSend === undefined) throw Error("File not found");
 
             const payload = new FormData();
@@ -72,7 +83,7 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
                     return jobId;
                 });
         },
-        enabled: fileToSend !== undefined,
+        enabled: postJobParams.fileToSend !== undefined,
         retry:false,
         refetchOnWindowFocus: false
     }); 
@@ -209,11 +220,15 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
         cancellable: isFetching && jobId !== undefined,
         cancelling: _cancelling,
         postJob: (payload: File, mode: TTranscriptionMode) => {
-            _setFileNo(n => n + 1);
+            console.log(`clicked`);
             setJobId(undefined);
-            setFileToSend(payload);
-            setMode(mode);
-            if(payload === fileToSend) postJobQuery.refetch();
+            setPostJobParams((prev) => {
+                return {
+                    fileToSend: payload,
+                    mode: mode,
+                    _fileNo: prev._fileNo + 1
+                }
+            });
             
             setIsFetching(true);
             setFilename(GetFilenameWithoutExtension(payload.name))

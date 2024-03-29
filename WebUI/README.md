@@ -21,7 +21,6 @@ Omnizart UI is a browser-based UI to simplify use of [*Omnizart*](https://music-
 2) Select the desired transcription mode
    - Music (Transcribes all instruments/vocals)
    - Vocal (Extracts out only the melody)
-   - Vocal Contour (Same as above, but with a different algorithm)
 3) Click Transcribe
    - *Alternatively*, toggle `Auto-Transcribe` to `On` to start the transcription process immediately after uploading a file
 4) Wait for transcription to finish (this may take a while)
@@ -38,6 +37,7 @@ Omnizart UI is a browser-based UI to simplify use of [*Omnizart*](https://music-
 - *Omnizart UI* not directly affliated with the original creators of *Omnizart*
 - The transcription history is stored in **non-persistent storage**, destroying the backend container will erase the transcription history
 - Modes `Drums` & `Chords` are currently unsupported due to Python version dependency issues in Omnizart (Python 2.7 required)
+- `Vocal Contour` is omitted, since it produces a .wav file instead of a midi transcription.
 
 ## Attributions
 Citation as requested by the authors of Omnizart:
