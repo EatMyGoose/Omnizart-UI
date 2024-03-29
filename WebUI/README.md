@@ -1,30 +1,58 @@
-# React + TypeScript + Vite
+# Omnizart UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## About
 
-Currently, two official plugins are available:
+Omnizart UI is a browser-based UI to simplify use of [*Omnizart*](https://music-and-culture-technology-lab.github.io/omnizart-doc/) - a ML music transcription tool that converts music files into *MIDI* files.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+![Page preview](/docs/preview.png)
 
-## Expanding the ESLint configuration
+## Usage Guide
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Installation
+- **Prerequisites**:
+  - Docker Desktop installed
+- Clone this repository into a folder of your choosing
+- Set the `working directory` to the folder containing the `docker-compose.yml` file
+- Run `docker compose up` in the terminal
+- Navigate to [http://localhost:5173/](http://localhost:5173/)
 
-- Configure the top-level `parserOptions` property like this:
+### Converting a music file to MIDI
+1) Upload a file within the `Select Input File` section
+2) Select the desired transcription mode
+   - Music (Transcribes all instruments/vocals)
+   - Vocal (Extracts out only the melody)
+   - Vocal Contour (Same as above, but with a different algorithm)
+3) Click Transcribe
+   - *Alternatively*, toggle `Auto-Transcribe` to `On` to start the transcription process immediately after uploading a file
+4) Wait for transcription to finish (this may take a while)
+5) To hear a preview of the transcribed file, start the player in the `Transcription Result` section
+6) Click on `Download` to download the resultant *MIDI* file.
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
+### Downloading a previously transcribed file
+1) Navigate to the sidebar, click the `›` button to expand it if neccessary
+2) Find the transcribed file and click on the download icon
+    - Results can be filtered based on filename in the `Settings` box
+
+## Remarks
+
+- *Omnizart UI* not directly affliated with the original creators of *Omnizart*
+- The transcription history is stored in **non-persistent storage**, destroying the backend container will erase the transcription history
+- Modes `Drums` & `Chords` are currently unsupported due to Python version dependency issues in Omnizart (Python 2.7 required)
+
+## Attributions
+Citation as requested by the authors of Omnizart:
+```
+[Omnizart]
+@article{Wu2021,
+  doi = {10.21105/joss.03391},
+  url = {https://doi.org/10.21105/joss.03391},
+  year = {2021},
+  publisher = {The Open Journal},
+  volume = {6},
+  number = {68},
+  pages = {3391},
+  author = {Yu-Te Wu and Yin-Jyun Luo and Tsung-Ping Chen and I-Chieh Wei and Jui-Yang Hsu and Yi-Chin Chuang and Li Su},
+  title = {Omnizart: A General Toolbox for Automatic Music Transcription},
+  journal = {Journal of Open Source Software}
 }
 ```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
