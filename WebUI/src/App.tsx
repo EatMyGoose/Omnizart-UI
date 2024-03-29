@@ -23,7 +23,7 @@ function App() {
 
   const [activePlayer, setActivePlayer] = React.useState<string | undefined>(undefined);
 
-  const jobHistory = useJobHistory();
+  const {jobHistories, polling} = useJobHistory();
 
   const [showSidebar, setShowSidebar] = React.useState<boolean>(true);
 
@@ -34,8 +34,9 @@ function App() {
       <div className={cx('app-row-fill', util.my_0, util.my_0, util.flex_row, styles.body_container)}>
         <div className={cx(styles.sidebar,showSidebar? "" : styles.hide)}>
           <Sidebar
+            pollingJobHistory={polling} 
             className={cx(util.full_height, util.my_0, util.my_0)}
-            jobHistory={jobHistory}
+            jobHistory={jobHistories}
           />
         </div>
         <div className={cx(styles.body_container, util.relative, util.full_height, util.overflow_y_scroll, showSidebar? "s10" : "s12")}>

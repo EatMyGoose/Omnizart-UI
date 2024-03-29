@@ -4,6 +4,7 @@ import { IJobStatus, TTranscriptionMode } from '../types';
 import { GetFilenameWithoutExtension, IsSuccessfulResponse } from "../util";
 import { useToast } from "./useToast";
 import { Endpoints } from "../Endpoints/Endpoints";
+import { useInvalidateJobHistory } from "./useJobHistoryList";
 
 export interface ITranscriptionJobStatus
 {
@@ -39,7 +40,9 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
     const [_fileNo, _setFileNo] = React.useState<number>(0);
     const [_cancelling, _setCancelling] = React.useState<boolean>(false);
 
-    const toast = useToast();
+    const _refreshJobHistoryAsync = useInvalidateJobHistory();
+
+    const _toast = useToast();
 
     const postJobQuery = useQuery({
         queryKey: ["transcription-post-job", {fileToSend, mode, _fileNo}],
@@ -65,6 +68,7 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
                     if(typeof jobId !== "number") throw Error("Job ID not returned")
                     
                     setJobId(jobId);
+                    _refreshJobHistoryAsync();
                     return jobId;
                 });
         },
@@ -97,7 +101,7 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
         refetchInterval: (query) => {
             const data = query.state.data;
             if(data !== undefined && data.done) return false;
-            else return 1500;
+            else return 3000;
         },
         retry: false,
         enabled: (jobId !== undefined),
@@ -107,8 +111,9 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
     React.useEffect(() => {
         if(pollJobQuery.isError) 
         {
-            toast.error(`Failed to process job ID<${jobId}>`);
+            _toast.error(`Failed to process job ID<${jobId}>`);
             setIsFetching(false); 
+            _refreshJobHistoryAsync();
         }
     }
     , [pollJobQuery.isError, jobId])
@@ -123,7 +128,7 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
                 const [_, jobId] =  queryKey as [string, number];
                 if(pollJobQuery.data?.request_terminate === true)
                 {
-                    toast.info(`Job ${jobId} cancelled successfully`);
+                    _toast.info(`Job ${jobId} cancelled successfully`);
                     return;
                 }
 
@@ -135,7 +140,7 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
                 if(!success)
                 {
                     const errMsg = await response.text();
-                    toast.error(errMsg);
+                    _toast.error(errMsg);
                     throw new Error(errMsg);
                 }
 
@@ -147,6 +152,7 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
             finally
             {
                 setIsFetching(false);
+                _refreshJobHistoryAsync();
             }
         },
         enabled: jobComplete,
@@ -161,7 +167,7 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
             const [_, jobId] =  queryKey as [string, number];
             if(jobId === undefined)
             {
-                toast.warning(`Error, no job ID available`);
+                _toast.warning(`Error, no job ID available`);
                 console.error(`[transcription-cancel] Error - no jobId specified`);
                 return false;
             }
@@ -174,12 +180,12 @@ export function useTranscriptionJob() : ITranscriptionJobStatus
             
             if(success)
             {
-                toast.info(`Cancelling transcription job ${jobId}`);
+                _toast.info(`Cancelling transcription job ${jobId}`);
                 _setCancelling(true);
             }
             else
             {
-                toast.error(`Failed to cancel transcription job ${jobId}`);
+                _toast.error(`Failed to cancel transcription job ${jobId}`);
             }
 
             return success;

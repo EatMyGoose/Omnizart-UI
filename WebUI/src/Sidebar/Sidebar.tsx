@@ -6,6 +6,7 @@ import { IJobStatus, IsJobReady } from "../types"
 import { cx } from "../util"
 import util from "../util.module.css"
 import { Collapsible } from "../Components/Collapsible";
+import { Spinner } from "../Components/Spinner";
 
 namespace JobFilters
 {
@@ -43,7 +44,8 @@ namespace JobFilters
 
 export interface ISidebar
 {
-    jobHistory: IJobStatus[],
+    pollingJobHistory: boolean
+    jobHistory: IJobStatus[]
     className?: string | undefined
 }
 
@@ -62,7 +64,15 @@ export function Sidebar(props: ISidebar)
         <div 
             className={cx(util.full_width, util.overflow_y_scroll, "card-panel", props.className || "")}
         >
-            <h6>Transcription History</h6>
+            <div className={cx(util.flex_row, util.space_between)}>
+                <h6>Transcription History</h6>
+
+                <Spinner
+                    loading={props.pollingJobHistory}
+                    sizeClass="small"
+                    className={util.scale_75}
+                />
+            </div>
             <Collapsible
                 summary={(<><i className="material-icons">settings</i>Settings</>)}
                 initiallyCollapsed={true}
